@@ -7,19 +7,24 @@ var achBatchCount = 0,
 	achFile,
 	achFileOutput,
 	achForbject,
+	batchEntryTemplate,
 	Bindie = require('bindie'),
 	classie = require('classie'),
 	expandButton,
+	ejs = require('ejs'),
 	forbject = require('forbject'),
 	tsACHFileContainer,
 	moment = require('moment'),
 	nach = require('nach'),
 	newACHBatch,
+	newACHEntry,
 	notification,
 	optionalButton,
 	optionalInputs,
 	StylieNotification = require('stylie.notifications'),
 	utils = nach.Utils;
+
+ejs.delimiter = '?';
 
 var showNotification = function (e) {
 	notification = new StylieNotification({
@@ -87,18 +92,13 @@ var updateNach = function (data) {
 				data.batch[z].effectiveEntryDate = moment(data.batch[z].effectiveEntryDate, 'YYMMDD').toDate();
 				newACHBatch = new nach.Batch(data.batch[z]);
 
-				// Create the entries
-				var firstCreditTransaction = new nach.Entry({
-					receivingDFI: '081000210',
-					DFIAccount: '12345678901234567',
-					amount: '35.21',
-					idNumber: 'RAj##23920rjf31',
-					individualName: 'Glen Selle',
-					discretionaryData: 'A1',
-					transactionCode: '22'
-				});
-				newACHBatch.addEntry(firstCreditTransaction);
-
+				if (data.batch[z].entries) {
+					// console.log('data.batch[z].entries', data.batch[z].entries);
+					for (var y in data.batch[z].entries) {
+						newACHEntry = new nach.Entry(data.batch[z].entries[y]);
+						newACHBatch.addEntry(newACHEntry);
+					}
+				}
 				achFile.addBatch(newACHBatch);
 			}
 		}
@@ -124,13 +124,32 @@ var updateOptionalInputs = function () {
 
 var achBatchContainerClickHandler = function (e) {
 	var clickTarget = e.target,
-		batchIndex;
+		batchIndex, entryIndex, entryhtml, batchElement, elementsInBatch, entryHtmlElement = document.createElement('section');
 
 	if (classie.has(clickTarget, 'remove-batch-button')) {
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		achBatchContainer.removeChild(document.querySelector('#ach-batch-' + batchIndex));
 		achBatchCount--;
 		achForbject.refresh();
+	}
+	else if (classie.has(clickTarget, 'add-batch-entry-button')) {
+		batchIndex = clickTarget.getAttribute('data-batchIndex');
+		batchElement = document.querySelector('#ach-batch-' + batchIndex);
+		// console.log('batchElement', batchElement);
+		elementsInBatch = batchElement.querySelectorAll('.ach-batchentry');
+		// entryIndex = (elementsInBatch.length > 0) ? (elementsInBatch.length - 1) : 0;
+		entryIndex = elementsInBatch.length;
+		entryhtml = ejs.render(batchEntryTemplate, {
+			batchIndex: batchIndex,
+			entryIndex: entryIndex
+		});
+		entryHtmlElement.setAttribute('class', 'ach-batchentry ts-form-row');
+		entryHtmlElement.setAttribute('id', 'ach-batchentry-' + batchIndex + '-' + entryIndex);
+		entryHtmlElement.setAttribute('data-batchIndex', batchIndex);
+		entryHtmlElement.setAttribute('data-entryIndex', entryIndex);
+		//id="ach-batchentry-<?-batchIndex?>-<?-entryIndex?>"
+		entryHtmlElement.innerHTML = entryhtml;
+		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).appendChild(entryHtmlElement);
 	}
 };
 
@@ -167,6 +186,7 @@ window.addEventListener('load', function () {
 	addBatchButton.addEventListener('click', addACHBatch, false);
 	achBatchContainer = document.querySelector('#ach-file-batches');
 	achBatchContainer.addEventListener('click', achBatchContainerClickHandler, false);
+	batchEntryTemplate = document.querySelector('#ach-batch-entrytemplate').innerHTML;
 	expandButton = document.querySelector('#expand-button');
 	expandButton.addEventListener('click', expandACHOutput, false);
 	optionalButton = document.querySelector('#optional-button');

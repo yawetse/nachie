@@ -1,5 +1,10 @@
+<script id="ach-batch-entrytemplate" type="text/template">
+  <? batchentryPrefix='batchentry-' +batchIndex+ '-'+entryIndex+ '-'; ?>
+
+  <% include _ach_entry_partial %>
+</script>
 <script id="ach-batch-template" type="text/template">
-  <? for(var a=0; a<=batchIndex;a++){ var batchPrefix='batch-' +a+ '-'; var forbtest=(forbjectData.formdata.batch && forbjectData.formdata.batch[a]); ?>
+  <? for(var a=0; a<=batchIndex;a++){ var batchPrefix='batch-' +a+ '-'; forbtest=(forbjectData.formdata.batch && forbjectData.formdata.batch[a]); ?>
   <section data-batchIndex="<?-a?>" id="ach-batch-<?-a?>" class="ach-batch ts-form-row">
     <hr>
     <div class="ts-row ">
