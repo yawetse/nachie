@@ -15,13 +15,14 @@
     "url": "git@github.com:yawetse/nacha.git"
   },
   "dependencies": {
-    "bindie": "^2.0.0",
+    "bindie": "^2.1.0",
     "classie": ">=0.1.0",
     "detectcss": "^1.0.2",
-    "forbject": "^1.1.0",
+    "forbject": "^1.3.0",
     "formie": "^1.1.0",
-    "nach": "^0.2.2",
+    "nach": "^0.3.0",
     "stylie": "^1.3.0",
+    "stylie.notifications": "^1.0.0",
     "util-extend": ">=1.0.1"
   },
   "devDependencies": {

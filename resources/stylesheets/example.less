@@ -1,6 +1,11 @@
 @import "../../node_modules/stylie/resources/stylesheets/stylie.less";
 @import "../../node_modules/stylie/resources/stylesheets/grid.less";
+@import "../../node_modules/stylie.notifications/resources/stylesheets/stylie.notifications.less";
 @maxtextwidth:48em;
+hr{
+	border:none;
+	border-bottom: 1px solid @accentColor;
+}
 #ts-ach-file-container{
 	padding-left: @sizemd;
 	background-color: @textPrimaryColor;
@@ -61,7 +66,7 @@ pre#ach-file-output{
 			padding-top:@sizemd;
 			padding-bottom:@sizemd;
 			.ts-label{
-				font-size: @percentsm;
+				font-size: @percentxs;
 			}
 			.ts-input{
 				width:100%;
