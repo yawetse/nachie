@@ -16,10 +16,13 @@ hr{
 	&.expanded{
 		position: absolute;
 		width:100%;
-		
 	}
-	&.ach-fix-top{
-		position: fixed;
+}
+@media screen and (min-width: @screenmd) {
+	#ts-ach-file-container{
+		&.ach-fix-top{
+			position: fixed;
+		}
 	}
 }
 form#ach{
