@@ -16979,7 +16979,6 @@ var achBatchContainer,
 	achFile,
 	achFileOutput,
 	achForbject,
-	batchEntryTemplate,
 	Bindie = require('bindie'),
 	classie = require('classie'),
 	dummydata = require('./dummydata'),
@@ -16996,8 +16995,7 @@ var achBatchContainer,
 	notification,
 	optionalInputs,
 	saveAs = require('filesaver.js'),
-	StylieNotification = require('stylie.notifications'),
-	utils = nach.Utils;
+	StylieNotification = require('stylie.notifications');
 
 ejs.delimiter = '?';
 
