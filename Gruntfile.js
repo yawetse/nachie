@@ -103,7 +103,8 @@ module.exports = function (grunt) {
 				options: {
 					sourceMap: true,
 					yuicompress: true,
-					compress: true
+					compress: true,
+					sourceMapFileInline: true
 				},
 				files: {
 					'example/stylesheets/nachie.css': 'resources/stylesheets/nachie.less',
