@@ -1,0 +1,46 @@
+<div class="ts-row ">
+  <h4 class="ts-pull-left">File Header</h4>
+  <!-- <small id="optional-button" class="ts-button ts-text-xs ts-pull-right">show optional</small> -->
+</div>
+<div id="ach-file-header">
+  <section class="ts-form-row">
+  <? var fileheadercount=0; 
+    for(var headerprops in header){  ?>
+    <div class="ts-col-span6 ts-form-padding">
+      <label class="ts-label" for="file-<?- headerprops ?>"><?- header[headerprops].name ?></label>
+      <input id="file-<?- headerprops ?>" class="ts-input file-<?- headerprops ?>" name="file[<?- headerprops ?>]" value="<?- header[headerprops].value ?>" maxlength="<?- header[headerprops].width ?>" />
+    </div>
+    <? 
+    if(fileheadercount%2===0){?>
+    </section>
+    <section class="ts-form-row">
+    <?}
+    fileheadercount++;
+  } ?>
+  <section>
+</div>
+<section class="ts-container-margin-xl">
+  <div class="ts-row ">
+    <h4 class="ts-pull-left">ACH Batches</h4>
+    <small id="add-batch-button" class="ts-button ts-text-xs ts-pull-right">add batch</small>
+  </div>
+  <div id="ach-file-batches">
+    <? for(var z = 0; z < _batches.length; z++){ ?>
+      <aside data-batchIndex="<?-z?>" id="ach-batch-<?-z?>" class="ach-batch ts-form-row">
+        <hr>
+        <div class="ts-row ">
+          <h6 class="ts-pull-left">Batch <?-z?></h6>
+          <small data-batchIndex="<?-z?>" id="remove-batch-button-<?-z?>" class="ts-button ts-text-xs ts-pull-right remove-batch-button">remove</small>
+        </div>  
+        <article class="ts-form-row">
+          <? for(var batchprop in _batches[z].header){ ?>
+              <div class="ts-col-span6 ts-form-padding">
+                <label class="ts-label" for="batches-<?- z ?>-<?- batchprop ?>"><?- _batches[z].header[batchprop].name ?></label>
+                <input id="batch-<?- z ?>-<?- batchprop ?>" class="ts-input batch-<?- z ?>-<?- batchprop ?>" name="batches[<?- z ?>][<?- batchprop ?>]" value="<?- _batches[z].header[batchprop].value ?>" maxlength="<?- _batches[z].header[batchprop].width ?>" />
+              </div>
+          <? } ?>
+        </article>
+      </aside>
+    <?} ?>    
+  </div>
+</section>

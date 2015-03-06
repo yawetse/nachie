@@ -15999,6 +15999,978 @@ module.exports = StylieNotifications;
 },{"classie":6,"detectcss":8,"events":18,"util":23,"util-extend":42}],42:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
 },{"dup":5}],43:[function(require,module,exports){
+module.exports = {
+	"_batches": [{
+		"_entries": [{
+			"fields": {
+				"recordTypeCode": {
+					"name": "Record Type Code",
+					"width": 1,
+					"position": 1,
+					"required": true,
+					"type": "numeric",
+					"value": "6"
+				},
+				"transactionCode": {
+					"name": "Transaction Code",
+					"width": 2,
+					"position": 2,
+					"required": true,
+					"type": "numeric",
+					"value": "22"
+				},
+				"receivingDFI": {
+					"name": "Receiving DFI Identification",
+					"width": 8,
+					"position": 3,
+					"required": true,
+					"type": "numeric",
+					"value": "021200025"
+				},
+				"checkDigit": {
+					"name": "Check Digit",
+					"width": 1,
+					"position": 4,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"DFIAccount": {
+					"name": "DFI Account Number",
+					"width": 17,
+					"position": 5,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "12345678901234567"
+				},
+				"amount": {
+					"name": "Amount",
+					"width": 10,
+					"position": 6,
+					"required": true,
+					"type": "numeric",
+					"value": 35.23,
+					"number": true
+				},
+				"idNumber": {
+					"name": "Individual Identification Number",
+					"width": 15,
+					"position": 7,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "RAJ##23920RJF31"
+				},
+				"individualName": {
+					"name": "Individual Name",
+					"width": 22,
+					"position": 8,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "GLEN SELLE"
+				},
+				"discretionaryData": {
+					"name": "Discretionary Data",
+					"width": 2,
+					"position": 9,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "A1"
+				},
+				"addendaId": {
+					"name": "Addenda Record Indicator",
+					"width": 1,
+					"position": 10,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"traceNumber": {
+					"name": "Trace Number",
+					"width": 15,
+					"position": 11,
+					"required": false,
+					"type": "numeric",
+					"blank": true,
+					"value": "123456780000000"
+				}
+			}
+		}],
+		"header": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "5"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "220"
+			},
+			"companyName": {
+				"name": "Company Name",
+				"width": 16,
+				"position": 3,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "ACME INC"
+			},
+			"companyDiscretionaryData": {
+				"name": "Company Discretionary Data",
+				"width": 20,
+				"position": 4,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": " "
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"standardEntryClassCode": {
+				"name": "Standard Entry Class Code",
+				"width": 3,
+				"position": 6,
+				"required": true,
+				"type": "alpha",
+				"value": "PPD"
+			},
+			"companyEntryDescription": {
+				"name": "Company Entry Description",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "AS PAYMENT"
+			},
+			"companyDescriptiveDate": {
+				"name": "Company Descriptive Date",
+				"width": 6,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"value": " "
+			},
+			"effectiveEntryDate": {
+				"name": "Effective Entry Date",
+				"width": 6,
+				"position": 9,
+				"required": true,
+				"type": "numeric",
+				"value": "150410"
+			},
+			"settlementDate": {
+				"name": "Settlement Date",
+				"width": 3,
+				"position": 10,
+				"required": false,
+				"type": "numeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatorStatusCode": {
+				"name": "Originator Status Code",
+				"width": 1,
+				"position": 11,
+				"required": true,
+				"type": "numeric",
+				"value": "1"
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 12,
+				"required": true,
+				"type": "numeric",
+				"value": "021200025"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 13,
+				"required": false,
+				"type": "numeric",
+				"value": 456
+			}
+		},
+		"control": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "8"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "220"
+			},
+			"addendaCount": {
+				"name": "Addenda Count",
+				"width": 6,
+				"position": 3,
+				"required": true,
+				"type": "numeric",
+				"value": 1
+			},
+			"entryHash": {
+				"name": "Entry Hash",
+				"width": 10,
+				"position": 4,
+				"required": true,
+				"type": "numeric",
+				"value": "8100021"
+			},
+			"totalDebit": {
+				"name": "Total Debit Entry Dollar Amount",
+				"width": 12,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": 0,
+				"number": true
+			},
+			"totalCredit": {
+				"name": "Total Credit Entry Dollar Amount",
+				"width": 12,
+				"position": 6,
+				"required": true,
+				"type": "numeric",
+				"value": 35.23,
+				"number": true
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"messageAuthenticationCode": {
+				"name": "Message Authentication Code",
+				"width": 19,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"reserved": {
+				"name": "Reserved",
+				"width": 6,
+				"position": 9,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 10,
+				"required": true,
+				"type": "numeric",
+				"value": "021200025"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 11,
+				"required": false,
+				"type": "numeric",
+				"value": 456
+			}
+		}
+	}, {
+		"_entries": [],
+		"header": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "5"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "220"
+			},
+			"companyName": {
+				"name": "Company Name",
+				"width": 16,
+				"position": 3,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "AACMEASDFINC"
+			},
+			"companyDiscretionaryData": {
+				"name": "Company Discretionary Data",
+				"width": 20,
+				"position": 4,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": " "
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"standardEntryClassCode": {
+				"name": "Standard Entry Class Code",
+				"width": 3,
+				"position": 6,
+				"required": true,
+				"type": "alpha",
+				"value": "PPD"
+			},
+			"companyEntryDescription": {
+				"name": "Company Entry Description",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "NEW ASDF"
+			},
+			"companyDescriptiveDate": {
+				"name": "Company Descriptive Date",
+				"width": 6,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"value": " "
+			},
+			"effectiveEntryDate": {
+				"name": "Effective Entry Date",
+				"width": 6,
+				"position": 9,
+				"required": true,
+				"type": "numeric",
+				"value": "150410"
+			},
+			"settlementDate": {
+				"name": "Settlement Date",
+				"width": 3,
+				"position": 10,
+				"required": false,
+				"type": "numeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatorStatusCode": {
+				"name": "Originator Status Code",
+				"width": 1,
+				"position": 11,
+				"required": true,
+				"type": "numeric",
+				"value": "1"
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 12,
+				"required": true,
+				"type": "numeric",
+				"value": "021200025"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 13,
+				"required": false,
+				"type": "numeric",
+				"value": 457
+			}
+		},
+		"control": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "8"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "220"
+			},
+			"addendaCount": {
+				"name": "Addenda Count",
+				"width": 6,
+				"position": 3,
+				"required": true,
+				"type": "numeric",
+				"value": 0
+			},
+			"entryHash": {
+				"name": "Entry Hash",
+				"width": 10,
+				"position": 4,
+				"required": true,
+				"type": "numeric",
+				"value": 0
+			},
+			"totalDebit": {
+				"name": "Total Debit Entry Dollar Amount",
+				"width": 12,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": 0,
+				"number": true
+			},
+			"totalCredit": {
+				"name": "Total Credit Entry Dollar Amount",
+				"width": 12,
+				"position": 6,
+				"required": true,
+				"type": "numeric",
+				"value": 0,
+				"number": true
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"messageAuthenticationCode": {
+				"name": "Message Authentication Code",
+				"width": 19,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"reserved": {
+				"name": "Reserved",
+				"width": 6,
+				"position": 9,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 10,
+				"required": true,
+				"type": "numeric",
+				"value": "021200025"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 11,
+				"required": false,
+				"type": "numeric",
+				"value": 457
+			}
+		}
+	}, {
+		"_entries": [{
+			"fields": {
+				"recordTypeCode": {
+					"name": "Record Type Code",
+					"width": 1,
+					"position": 1,
+					"required": true,
+					"type": "numeric",
+					"value": "6"
+				},
+				"transactionCode": {
+					"name": "Transaction Code",
+					"width": 2,
+					"position": 2,
+					"required": true,
+					"type": "numeric",
+					"value": "22"
+				},
+				"receivingDFI": {
+					"name": "Receiving DFI Identification",
+					"width": 8,
+					"position": 3,
+					"required": true,
+					"type": "numeric",
+					"value": "021200025"
+				},
+				"checkDigit": {
+					"name": "Check Digit",
+					"width": 1,
+					"position": 4,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"DFIAccount": {
+					"name": "DFI Account Number",
+					"width": 17,
+					"position": 5,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "12345678901234567"
+				},
+				"amount": {
+					"name": "Amount",
+					"width": 10,
+					"position": 6,
+					"required": true,
+					"type": "numeric",
+					"value": 35.23,
+					"number": true
+				},
+				"idNumber": {
+					"name": "Individual Identification Number",
+					"width": 15,
+					"position": 7,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "ASDFDSAF"
+				},
+				"individualName": {
+					"name": "Individual Name",
+					"width": 22,
+					"position": 8,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "JOSH JER"
+				},
+				"discretionaryData": {
+					"name": "Discretionary Data",
+					"width": 2,
+					"position": 9,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "A1"
+				},
+				"addendaId": {
+					"name": "Addenda Record Indicator",
+					"width": 1,
+					"position": 10,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"traceNumber": {
+					"name": "Trace Number",
+					"width": 15,
+					"position": 11,
+					"required": false,
+					"type": "numeric",
+					"blank": true,
+					"value": "123456780000001"
+				}
+			}
+		}],
+		"header": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "5"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "220"
+			},
+			"companyName": {
+				"name": "Company Name",
+				"width": 16,
+				"position": 3,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "ACME INC"
+			},
+			"companyDiscretionaryData": {
+				"name": "Company Discretionary Data",
+				"width": 20,
+				"position": 4,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": " "
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"standardEntryClassCode": {
+				"name": "Standard Entry Class Code",
+				"width": 3,
+				"position": 6,
+				"required": true,
+				"type": "alpha",
+				"value": "PPD"
+			},
+			"companyEntryDescription": {
+				"name": "Company Entry Description",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "NEW PAYMEN"
+			},
+			"companyDescriptiveDate": {
+				"name": "Company Descriptive Date",
+				"width": 6,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"value": " "
+			},
+			"effectiveEntryDate": {
+				"name": "Effective Entry Date",
+				"width": 6,
+				"position": 9,
+				"required": true,
+				"type": "numeric",
+				"value": "150410"
+			},
+			"settlementDate": {
+				"name": "Settlement Date",
+				"width": 3,
+				"position": 10,
+				"required": false,
+				"type": "numeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatorStatusCode": {
+				"name": "Originator Status Code",
+				"width": 1,
+				"position": 11,
+				"required": true,
+				"type": "numeric",
+				"value": "1"
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 12,
+				"required": true,
+				"type": "numeric",
+				"value": "021200025"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 13,
+				"required": false,
+				"type": "numeric",
+				"value": 458
+			}
+		},
+		"control": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "8"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "220"
+			},
+			"addendaCount": {
+				"name": "Addenda Count",
+				"width": 6,
+				"position": 3,
+				"required": true,
+				"type": "numeric",
+				"value": 1
+			},
+			"entryHash": {
+				"name": "Entry Hash",
+				"width": 10,
+				"position": 4,
+				"required": true,
+				"type": "numeric",
+				"value": "8100021"
+			},
+			"totalDebit": {
+				"name": "Total Debit Entry Dollar Amount",
+				"width": 12,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": 0,
+				"number": true
+			},
+			"totalCredit": {
+				"name": "Total Credit Entry Dollar Amount",
+				"width": 12,
+				"position": 6,
+				"required": true,
+				"type": "numeric",
+				"value": 35.23,
+				"number": true
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"messageAuthenticationCode": {
+				"name": "Message Authentication Code",
+				"width": 19,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"reserved": {
+				"name": "Reserved",
+				"width": 6,
+				"position": 9,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 10,
+				"required": true,
+				"type": "numeric",
+				"value": "021200025"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 11,
+				"required": false,
+				"type": "numeric",
+				"value": 458
+			}
+		}
+	}],
+	"header": {
+		"recordTypeCode": {
+			"name": "Record Type Code",
+			"width": 1,
+			"position": 1,
+			"required": true,
+			"type": "numeric",
+			"value": "1"
+		},
+		"priorityCode": {
+			"name": "Priority Code",
+			"width": 2,
+			"position": 2,
+			"required": true,
+			"type": "numeric",
+			"value": "01"
+		},
+		"immediateDestination": {
+			"name": "Immediate Destination",
+			"width": 10,
+			"position": 3,
+			"required": true,
+			"type": "ABA",
+			"paddingChar": " ",
+			"value": "123456789"
+		},
+		"immediateOrigin": {
+			"name": "Immediate Origin",
+			"width": 10,
+			"position": 4,
+			"required": true,
+			"type": "numeric",
+			"paddingChar": " ",
+			"value": "123456789"
+		},
+		"fileCreationDate": {
+			"name": "File Creation Date",
+			"width": 6,
+			"position": 5,
+			"required": true,
+			"type": "numeric",
+			"value": "150306"
+		},
+		"fileCreationTime": {
+			"name": "File Creation Time",
+			"width": 4,
+			"position": 6,
+			"required": true,
+			"type": "numeric",
+			"value": "0109"
+		},
+		"fileIdModifier": {
+			"name": "File Modifier",
+			"width": 1,
+			"position": 7,
+			"required": true,
+			"type": "alphanumeric",
+			"value": "A"
+		},
+		"recordSize": {
+			"name": "Record Size",
+			"width": 3,
+			"position": 8,
+			"type": "numeric",
+			"required": true,
+			"value": "094"
+		},
+		"blockingFactor": {
+			"name": "Blocking Factor",
+			"width": 2,
+			"position": 9,
+			"type": "numeric",
+			"required": true,
+			"value": "10"
+		},
+		"formatCode": {
+			"name": "Format Code",
+			"width": 1,
+			"position": 10,
+			"required": true,
+			"type": "numeric",
+			"value": "1"
+		},
+		"immediateDestinationName": {
+			"name": "Immediate Destination Name",
+			"width": 23,
+			"position": 11,
+			"required": true,
+			"type": "alphanumeric",
+			"value": "ACME ASDF DESTINATION"
+		},
+		"immediateOriginName": {
+			"name": "Immediate Origin Name",
+			"width": 23,
+			"position": 12,
+			"required": true,
+			"type": "alphanumeric",
+			"value": "ACME SDAF ORIGIN"
+		},
+		"referenceCode": {
+			"name": "Reference Code",
+			"width": 8,
+			"position": 13,
+			"required": true,
+			"type": "alphanumeric",
+			"value": "00000000"
+		}
+	},
+	"control": {
+		"recordTypeCode": {
+			"name": "Record Type Code",
+			"width": 1,
+			"position": 1,
+			"type": "numeric",
+			"value": "9"
+		},
+		"batchCount": {
+			"name": "Batch Count",
+			"width": 6,
+			"position": 2,
+			"type": "numeric",
+			"value": 2
+		},
+		"blockCount": {
+			"name": "Block Count",
+			"width": 6,
+			"position": 3,
+			"type": "numeric",
+			"value": 1
+		},
+		"addendaCount": {
+			"name": "Addenda Count",
+			"width": 8,
+			"position": 4,
+			"type": "numeric",
+			"value": 2
+		},
+		"entryHash": {
+			"name": "Entry Hash",
+			"width": 10,
+			"position": 5,
+			"type": "numeric",
+			"value": "16200042"
+		},
+		"totalDebit": {
+			"name": "Total Debit Entry Dollar Amount in File",
+			"width": 12,
+			"position": 6,
+			"type": "numeric",
+			"value": 0,
+			"number": true
+		},
+		"totalCredit": {
+			"name": "Total Credit Entry Dollar Amount in File",
+			"width": 12,
+			"position": 7,
+			"type": "numeric",
+			"value": 70.46,
+			"number": true
+		},
+		"reserved": {
+			"name": "Reserved",
+			"width": 39,
+			"position": 8,
+			"type": "alphanumeric",
+			"blank": true,
+			"value": ""
+		}
+	}
+};
+
+},{}],44:[function(require,module,exports){
 'use strict';
 
 var achBatchCount = 0,
@@ -16011,6 +16983,7 @@ var achBatchCount = 0,
 	batchEntryTemplate,
 	Bindie = require('bindie'),
 	classie = require('classie'),
+	dummydata = require('./dummydata'),
 	expandButton,
 	ejs = require('ejs'),
 	forbject = require('forbject'),
@@ -16053,38 +17026,6 @@ var downloadACH = function () {
 	});
 };
 var saveACH = function () {
-	console.log('achFile', achFile);
-	// var saveACHObject = {},
-	// 	saveACHBatches = [],
-	// 	getEntryValues = function(entryObject){
-	// 		var returnEntryObject={};
-	// 		for (var entryFieldProp in entryObject.fields) {
-	// 			returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
-	// 		}
-	// 		return returnEntryObject;
-	// 	},
-	// 	getBatchValues = function (batchObject) {
-	// 		console.log('batchObject', batchObject);
-	// 		var returnBatchObject = {};
-	// 		for (var batchHeaderProp in batchObject.header) {
-	// 			returnBatchObject[batchHeaderProp] = batchObject.header[batchHeaderProp].value;
-	// 		}
-	// 		if(batchObject._entries.length>0){
-	// 			returnBatchObject.entries=[];
-	// 			for (var d = 0; d < batchObject._entries.length; d++) {
-	// 				returnBatchObject.entries[d] = getEntryValues(batchObject._entries[d]);
-	// 			}
-	// 		}
-	// 		return returnBatchObject;
-	// 	};
-	// for (var headerprop in achFile.header) {
-	// 	saveACHObject[headerprop] = achFile.header[headerprop].value;
-	// }
-	// for (var c = 0; c < achFile._batches.length; c++) {
-	// 	saveACHBatches[c] = getBatchValues(achFile._batches[c]);
-	// }
-	// saveACHObject.batches = saveACHBatches;
-	// console.log('saveACHObject', saveACHObject);
 	var blob = new Blob([JSON.stringify(achFile, null, '  ')], {
 		type: 'application/json;charset=utf-8'
 	});
@@ -16123,27 +17064,17 @@ var expandACHOutput = function () {
 	}
 };
 
-var addACHBatch = function () {
-	achForbject.refresh();
-	achBindie.update({
-		data: {
-			achBatchCount: {
-				batchIndex: achBatchCount,
-				forbjectData: {
-					formdata: achForbject.getObject()
-				}
-			},
-		}
-	});
-	achForbject.refresh();
-	achBatchCount++;
-};
-
 var updateNachieOutput = function (achFile) {
 	try {
 		achFile.generateFile(function (fileString) {
 			achFileOutput.innerHTML = fileString;
 		});
+		achBindie.update({
+			data: {
+				achFile: achFile
+			}
+		});
+		// achForbject.refresh();
 	}
 	catch (e) {
 		showNotification(e);
@@ -16151,30 +17082,25 @@ var updateNachieOutput = function (achFile) {
 	}
 };
 
-var updateNach = function (data) {
+var updateNachOnFormChange = function (data) {
+	// console.log('updateNachOnFormChange data', data);
 	try {
-		// console.log('updateNach data', data);
 		achFile = new nach.File(data.file);
-
 		if (data.batches) {
 			for (var z in data.batches) {
-				// console.log('data.batches[z]', data.batches[z]);
 				data.batches[z].effectiveEntryDate = moment(data.batches[z].effectiveEntryDate, 'YYMMDD').toDate();
 				newACHBatch = new nach.Batch(data.batches[z]);
 
 				if (data.batches[z].entries) {
-					// console.log('data.batches[z].entries', data.batches[z].entries);
 					for (var y in data.batches[z].entries) {
 						newACHEntry = new nach.Entry(data.batches[z].entries[y]);
 						newACHBatch.addEntry(newACHEntry);
 					}
 				}
-				// console.log('achFile.addBatch', achFile.addBatch);
 				achFile.addBatch(newACHBatch);
 			}
 		}
-		// console.log('achFile', achFile);
-		updateNachieOutput();
+		updateNachieOutput(achFile);
 	}
 	catch (e) {
 		showNotification(e);
@@ -16182,23 +17108,15 @@ var updateNach = function (data) {
 	}
 };
 
-var initDefaultValues = function () {
-	document.querySelector('#fileCreationDate').value = utils.formatDate(new Date());
-	document.querySelector('#fileCreationTime').value = utils.formatTime(new Date());
-};
-
-var updateOptionalInputs = function () {
-	optionalInputs = document.querySelectorAll('.ts-form-optional');
-};
-
 var achBatchContainerClickHandler = function (e) {
 	var clickTarget = e.target,
 		batchIndex, entryIndex, entryhtml, batchElement, elementsInBatch, entryHtmlElement = document.createElement('section');
+	console.log(clickTarget);
 
 	if (classie.has(clickTarget, 'remove-batch-button')) {
+		console.log(clickTarget, 'remove-batch-button');
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		achBatchContainer.removeChild(document.querySelector('#ach-batch-' + batchIndex));
-		achBatchCount--;
 		achForbject.refresh();
 	}
 	else if (classie.has(clickTarget, 'remove-batchentry-button')) {
@@ -16246,6 +17164,10 @@ var moveACHFileOutput = function () {
 	}
 };
 
+var addACHBatch = function () {
+
+};
+
 var loadNachieFromObject = function (nachie) {
 	// console.log('nachie', nachie);
 	var data = {},
@@ -16271,7 +17193,6 @@ var loadNachieFromObject = function (nachie) {
 		};
 
 	try {
-		//createfile
 		for (var headerprop in nachie.header) {
 			data[headerprop] = nachie.header[headerprop].value;
 		}
@@ -16281,24 +17202,16 @@ var loadNachieFromObject = function (nachie) {
 			for (var z = 0; z < nachie._batches.length; z++) {
 				nachie._batches[z] = getBatchValues(nachie._batches[z]);
 				nachie._batches[z].effectiveEntryDate = moment(nachie._batches[z].effectiveEntryDate, 'YYMMDD').toDate();
-				//createbatches
 				newACHBatch = new nach.Batch(nachie._batches[z]);
-				console.log('newACHBatch', newACHBatch);
 				if (nachie._batches[z].entries) {
-					// console.log('nachie._batches[z].entries', nachie._batches[z].entries);
 					for (var y in nachie._batches[z].entries) {
-						//createentries
 						newACHEntry = new nach.Entry(nachie._batches[z].entries[y]);
-						console.log('newACHEntry', newACHEntry);
-						//addentriestobatch
 						newACHBatch.addEntry(newACHEntry);
 					}
 				}
-				//addbatchtofile
 				achFile.addBatch(newACHBatch);
 			}
 		}
-
 		//updateoutput
 		updateNachieOutput(achFile);
 	}
@@ -16330,19 +17243,29 @@ var loadNachieFileHandler = function () {
 	};
 };
 
+var initEvents = function () {
+	addBatchButton = document.querySelector('#add-batch-button');
+	addBatchButton.addEventListener('click', addACHBatch, false);
+	achBatchContainer = document.querySelector('#ach-file-batches');
+	achBatchContainer.addEventListener('click', achBatchContainerClickHandler, false);
+	// optionalButton = document.querySelector('#optional-button');
+	// optionalButton.addEventListener('click', showOptionalInput, false);
+};
+
 window.addEventListener('load', function () {
 	achBindie = new Bindie({
 		ejsdelimiter: '?',
 		strictbinding: true
 	});
 	achBindie.addBinder({
-		prop: 'achBatchCount',
-		elementSelector: '#ach-file-batches',
+		prop: 'achFile',
+		elementSelector: '#achFile-container-binder',
 		binderType: 'template',
-		binderTemplate: document.querySelector('#ach-batch-template').innerHTML,
+		binderTemplate: document.querySelector('#ach-form-template').innerHTML,
 		binderCallback: function ( /*cbdata*/ ) {
-			updateOptionalInputs();
+			// updateOptionalInputs();
 			achForbject.refresh();
+			initEvents();
 			// console.log('binderCallback cbdata', cbdata);
 		}
 	});
@@ -16358,27 +17281,26 @@ window.addEventListener('load', function () {
 			}
 		}
 	});
-	achForbject.on('autoRefreshOnValChange', updateNach);
-	addBatchButton = document.querySelector('#add-batch-button');
-	addBatchButton.addEventListener('click', addACHBatch, false);
-	achBatchContainer = document.querySelector('#ach-file-batches');
-	achBatchContainer.addEventListener('click', achBatchContainerClickHandler, false);
-	batchEntryTemplate = document.querySelector('#ach-batch-entrytemplate').innerHTML;
+	achForbject.on('autoRefreshOnValChange', updateNachOnFormChange);
+	initEvents();
+	// batchEntryTemplate = document.querySelector('#ach-batch-entrytemplate').innerHTML;
 	expandButton = document.querySelector('#expand-button');
 	expandButton.addEventListener('click', expandACHOutput, false);
 	loadNachieFile = document.querySelector('#load-button');
 	loadNachieFile.addEventListener('change', loadNachieFileHandler, false);
-	optionalButton = document.querySelector('#optional-button');
-	optionalButton.addEventListener('click', showOptionalInput, false);
+
 	optionalInputs = document.querySelectorAll('.ts-form-optional');
 	tsACHFileContainer = document.querySelector('#ts-ach-file-container');
 	tsACHFileContainerTopPos = tsACHFileContainer.getBoundingClientRect().top;
-	initDefaultValues();
+	// initDefaultValues();
 	document.querySelector('#download-button').addEventListener('click', downloadACH, false);
 	document.querySelector('#save-button').addEventListener('click', saveACH, false);
-	window.achForbject = achForbject;
-	window.achFile = achFile;
 	window.addEventListener('scroll', moveACHFileOutput, false);
+	loadNachieFromObject(dummydata);
+
 }, false);
 
-},{"bindie":1,"classie":6,"ejs":10,"filesaver.js":13,"forbject":14,"moment":24,"nach":25,"stylie.notifications":40}]},{},[43]);
+window.achForbject = achForbject;
+window.achFile = achFile;
+
+},{"./dummydata":43,"bindie":1,"classie":6,"ejs":10,"filesaver.js":13,"forbject":14,"moment":24,"nach":25,"stylie.notifications":40}]},{},[44]);

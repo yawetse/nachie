@@ -10,6 +10,7 @@ var achBatchCount = 0,
 	batchEntryTemplate,
 	Bindie = require('bindie'),
 	classie = require('classie'),
+	dummydata = require('./dummydata'),
 	expandButton,
 	ejs = require('ejs'),
 	forbject = require('forbject'),
@@ -52,38 +53,6 @@ var downloadACH = function () {
 	});
 };
 var saveACH = function () {
-	console.log('achFile', achFile);
-	// var saveACHObject = {},
-	// 	saveACHBatches = [],
-	// 	getEntryValues = function(entryObject){
-	// 		var returnEntryObject={};
-	// 		for (var entryFieldProp in entryObject.fields) {
-	// 			returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
-	// 		}
-	// 		return returnEntryObject;
-	// 	},
-	// 	getBatchValues = function (batchObject) {
-	// 		console.log('batchObject', batchObject);
-	// 		var returnBatchObject = {};
-	// 		for (var batchHeaderProp in batchObject.header) {
-	// 			returnBatchObject[batchHeaderProp] = batchObject.header[batchHeaderProp].value;
-	// 		}
-	// 		if(batchObject._entries.length>0){
-	// 			returnBatchObject.entries=[];
-	// 			for (var d = 0; d < batchObject._entries.length; d++) {
-	// 				returnBatchObject.entries[d] = getEntryValues(batchObject._entries[d]);
-	// 			}
-	// 		}
-	// 		return returnBatchObject;
-	// 	};
-	// for (var headerprop in achFile.header) {
-	// 	saveACHObject[headerprop] = achFile.header[headerprop].value;
-	// }
-	// for (var c = 0; c < achFile._batches.length; c++) {
-	// 	saveACHBatches[c] = getBatchValues(achFile._batches[c]);
-	// }
-	// saveACHObject.batches = saveACHBatches;
-	// console.log('saveACHObject', saveACHObject);
 	var blob = new Blob([JSON.stringify(achFile, null, '  ')], {
 		type: 'application/json;charset=utf-8'
 	});
@@ -122,27 +91,17 @@ var expandACHOutput = function () {
 	}
 };
 
-var addACHBatch = function () {
-	achForbject.refresh();
-	achBindie.update({
-		data: {
-			achBatchCount: {
-				batchIndex: achBatchCount,
-				forbjectData: {
-					formdata: achForbject.getObject()
-				}
-			},
-		}
-	});
-	achForbject.refresh();
-	achBatchCount++;
-};
-
 var updateNachieOutput = function (achFile) {
 	try {
 		achFile.generateFile(function (fileString) {
 			achFileOutput.innerHTML = fileString;
 		});
+		achBindie.update({
+			data: {
+				achFile: achFile
+			}
+		});
+		// achForbject.refresh();
 	}
 	catch (e) {
 		showNotification(e);
@@ -150,30 +109,25 @@ var updateNachieOutput = function (achFile) {
 	}
 };
 
-var updateNach = function (data) {
+var updateNachOnFormChange = function (data) {
+	// console.log('updateNachOnFormChange data', data);
 	try {
-		// console.log('updateNach data', data);
 		achFile = new nach.File(data.file);
-
 		if (data.batches) {
 			for (var z in data.batches) {
-				// console.log('data.batches[z]', data.batches[z]);
 				data.batches[z].effectiveEntryDate = moment(data.batches[z].effectiveEntryDate, 'YYMMDD').toDate();
 				newACHBatch = new nach.Batch(data.batches[z]);
 
 				if (data.batches[z].entries) {
-					// console.log('data.batches[z].entries', data.batches[z].entries);
 					for (var y in data.batches[z].entries) {
 						newACHEntry = new nach.Entry(data.batches[z].entries[y]);
 						newACHBatch.addEntry(newACHEntry);
 					}
 				}
-				// console.log('achFile.addBatch', achFile.addBatch);
 				achFile.addBatch(newACHBatch);
 			}
 		}
-		// console.log('achFile', achFile);
-		updateNachieOutput();
+		updateNachieOutput(achFile);
 	}
 	catch (e) {
 		showNotification(e);
@@ -181,23 +135,15 @@ var updateNach = function (data) {
 	}
 };
 
-var initDefaultValues = function () {
-	document.querySelector('#fileCreationDate').value = utils.formatDate(new Date());
-	document.querySelector('#fileCreationTime').value = utils.formatTime(new Date());
-};
-
-var updateOptionalInputs = function () {
-	optionalInputs = document.querySelectorAll('.ts-form-optional');
-};
-
 var achBatchContainerClickHandler = function (e) {
 	var clickTarget = e.target,
 		batchIndex, entryIndex, entryhtml, batchElement, elementsInBatch, entryHtmlElement = document.createElement('section');
+	console.log(clickTarget);
 
 	if (classie.has(clickTarget, 'remove-batch-button')) {
+		console.log(clickTarget, 'remove-batch-button');
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		achBatchContainer.removeChild(document.querySelector('#ach-batch-' + batchIndex));
-		achBatchCount--;
 		achForbject.refresh();
 	}
 	else if (classie.has(clickTarget, 'remove-batchentry-button')) {
@@ -245,6 +191,10 @@ var moveACHFileOutput = function () {
 	}
 };
 
+var addACHBatch = function () {
+
+};
+
 var loadNachieFromObject = function (nachie) {
 	// console.log('nachie', nachie);
 	var data = {},
@@ -270,7 +220,6 @@ var loadNachieFromObject = function (nachie) {
 		};
 
 	try {
-		//createfile
 		for (var headerprop in nachie.header) {
 			data[headerprop] = nachie.header[headerprop].value;
 		}
@@ -280,24 +229,16 @@ var loadNachieFromObject = function (nachie) {
 			for (var z = 0; z < nachie._batches.length; z++) {
 				nachie._batches[z] = getBatchValues(nachie._batches[z]);
 				nachie._batches[z].effectiveEntryDate = moment(nachie._batches[z].effectiveEntryDate, 'YYMMDD').toDate();
-				//createbatches
 				newACHBatch = new nach.Batch(nachie._batches[z]);
-				console.log('newACHBatch', newACHBatch);
 				if (nachie._batches[z].entries) {
-					// console.log('nachie._batches[z].entries', nachie._batches[z].entries);
 					for (var y in nachie._batches[z].entries) {
-						//createentries
 						newACHEntry = new nach.Entry(nachie._batches[z].entries[y]);
-						console.log('newACHEntry', newACHEntry);
-						//addentriestobatch
 						newACHBatch.addEntry(newACHEntry);
 					}
 				}
-				//addbatchtofile
 				achFile.addBatch(newACHBatch);
 			}
 		}
-
 		//updateoutput
 		updateNachieOutput(achFile);
 	}
@@ -329,19 +270,29 @@ var loadNachieFileHandler = function () {
 	};
 };
 
+var initEvents = function () {
+	addBatchButton = document.querySelector('#add-batch-button');
+	addBatchButton.addEventListener('click', addACHBatch, false);
+	achBatchContainer = document.querySelector('#ach-file-batches');
+	achBatchContainer.addEventListener('click', achBatchContainerClickHandler, false);
+	// optionalButton = document.querySelector('#optional-button');
+	// optionalButton.addEventListener('click', showOptionalInput, false);
+};
+
 window.addEventListener('load', function () {
 	achBindie = new Bindie({
 		ejsdelimiter: '?',
 		strictbinding: true
 	});
 	achBindie.addBinder({
-		prop: 'achBatchCount',
-		elementSelector: '#ach-file-batches',
+		prop: 'achFile',
+		elementSelector: '#achFile-container-binder',
 		binderType: 'template',
-		binderTemplate: document.querySelector('#ach-batch-template').innerHTML,
+		binderTemplate: document.querySelector('#ach-form-template').innerHTML,
 		binderCallback: function ( /*cbdata*/ ) {
-			updateOptionalInputs();
+			// updateOptionalInputs();
 			achForbject.refresh();
+			initEvents();
 			// console.log('binderCallback cbdata', cbdata);
 		}
 	});
@@ -357,25 +308,24 @@ window.addEventListener('load', function () {
 			}
 		}
 	});
-	achForbject.on('autoRefreshOnValChange', updateNach);
-	addBatchButton = document.querySelector('#add-batch-button');
-	addBatchButton.addEventListener('click', addACHBatch, false);
-	achBatchContainer = document.querySelector('#ach-file-batches');
-	achBatchContainer.addEventListener('click', achBatchContainerClickHandler, false);
-	batchEntryTemplate = document.querySelector('#ach-batch-entrytemplate').innerHTML;
+	achForbject.on('autoRefreshOnValChange', updateNachOnFormChange);
+	initEvents();
+	// batchEntryTemplate = document.querySelector('#ach-batch-entrytemplate').innerHTML;
 	expandButton = document.querySelector('#expand-button');
 	expandButton.addEventListener('click', expandACHOutput, false);
 	loadNachieFile = document.querySelector('#load-button');
 	loadNachieFile.addEventListener('change', loadNachieFileHandler, false);
-	optionalButton = document.querySelector('#optional-button');
-	optionalButton.addEventListener('click', showOptionalInput, false);
+
 	optionalInputs = document.querySelectorAll('.ts-form-optional');
 	tsACHFileContainer = document.querySelector('#ts-ach-file-container');
 	tsACHFileContainerTopPos = tsACHFileContainer.getBoundingClientRect().top;
-	initDefaultValues();
+	// initDefaultValues();
 	document.querySelector('#download-button').addEventListener('click', downloadACH, false);
 	document.querySelector('#save-button').addEventListener('click', saveACH, false);
-	window.achForbject = achForbject;
-	window.achFile = achFile;
 	window.addEventListener('scroll', moveACHFileOutput, false);
+	loadNachieFromObject(dummydata);
+
 }, false);
+
+window.achForbject = achForbject;
+window.achFile = achFile;
