@@ -144,7 +144,7 @@ bindie.prototype._render = function (options) {
 };
 module.exports = bindie;
 
-},{"ejs":3,"events":17,"util":22,"util-extend":5}],3:[function(require,module,exports){
+},{"ejs":3,"events":18,"util":23,"util-extend":5}],3:[function(require,module,exports){
 /*
  * EJS Embedded JavaScript templates
  * Copyright 2112 Matthew Eernisse (mde@fleegix.org)
@@ -676,7 +676,7 @@ if (typeof window != 'undefined') {
   window.ejs = exports;
 }
 
-},{"./utils":4,"fs":16,"path":19}],4:[function(require,module,exports){
+},{"./utils":4,"fs":17,"path":20}],4:[function(require,module,exports){
 /*
  * EJS Embedded JavaScript templates
  * Copyright 2112 Matthew Eernisse (mde@fleegix.org)
@@ -1612,7 +1612,7 @@ if (typeof window != 'undefined') {
   window.ejs = exports;
 }
 
-},{"../package.json":12,"./utils":11,"fs":16,"path":19}],11:[function(require,module,exports){
+},{"../package.json":12,"./utils":11,"fs":17,"path":20}],11:[function(require,module,exports){
 /*
  * EJS Embedded JavaScript templates
  * Copyright 2112 Matthew Eernisse (mde@fleegix.org)
@@ -1830,6 +1830,252 @@ module.exports={
 }
 
 },{}],13:[function(require,module,exports){
+/* FileSaver.js
+ * A saveAs() FileSaver implementation.
+ * 2014-12-17
+ *
+ * By Eli Grey, http://eligrey.com
+ * License: X11/MIT
+ *   See https://github.com/eligrey/FileSaver.js/blob/master/LICENSE.md
+ */
+
+/*global self */
+/*jslint bitwise: true, indent: 4, laxbreak: true, laxcomma: true, smarttabs: true, plusplus: true */
+
+/*! @source http://purl.eligrey.com/github/FileSaver.js/blob/master/FileSaver.js */
+
+var saveAs = saveAs
+  // IE 10+ (native saveAs)
+  || (typeof navigator !== "undefined" &&
+      navigator.msSaveOrOpenBlob && navigator.msSaveOrOpenBlob.bind(navigator))
+  // Everyone else
+  || (function(view) {
+	"use strict";
+	// IE <10 is explicitly unsupported
+	if (typeof navigator !== "undefined" &&
+	    /MSIE [1-9]\./.test(navigator.userAgent)) {
+		return;
+	}
+	var
+		  doc = view.document
+		  // only get URL when necessary in case Blob.js hasn't overridden it yet
+		, get_URL = function() {
+			return view.URL || view.webkitURL || view;
+		}
+		, save_link = doc.createElementNS("http://www.w3.org/1999/xhtml", "a")
+		, can_use_save_link = "download" in save_link
+		, click = function(node) {
+			var event = doc.createEvent("MouseEvents");
+			event.initMouseEvent(
+				"click", true, false, view, 0, 0, 0, 0, 0
+				, false, false, false, false, 0, null
+			);
+			node.dispatchEvent(event);
+		}
+		, webkit_req_fs = view.webkitRequestFileSystem
+		, req_fs = view.requestFileSystem || webkit_req_fs || view.mozRequestFileSystem
+		, throw_outside = function(ex) {
+			(view.setImmediate || view.setTimeout)(function() {
+				throw ex;
+			}, 0);
+		}
+		, force_saveable_type = "application/octet-stream"
+		, fs_min_size = 0
+		// See https://code.google.com/p/chromium/issues/detail?id=375297#c7 and
+		// https://github.com/eligrey/FileSaver.js/commit/485930a#commitcomment-8768047
+		// for the reasoning behind the timeout and revocation flow
+		, arbitrary_revoke_timeout = 500 // in ms
+		, revoke = function(file) {
+			var revoker = function() {
+				if (typeof file === "string") { // file is an object URL
+					get_URL().revokeObjectURL(file);
+				} else { // file is a File
+					file.remove();
+				}
+			};
+			if (view.chrome) {
+				revoker();
+			} else {
+				setTimeout(revoker, arbitrary_revoke_timeout);
+			}
+		}
+		, dispatch = function(filesaver, event_types, event) {
+			event_types = [].concat(event_types);
+			var i = event_types.length;
+			while (i--) {
+				var listener = filesaver["on" + event_types[i]];
+				if (typeof listener === "function") {
+					try {
+						listener.call(filesaver, event || filesaver);
+					} catch (ex) {
+						throw_outside(ex);
+					}
+				}
+			}
+		}
+		, FileSaver = function(blob, name) {
+			// First try a.download, then web filesystem, then object URLs
+			var
+				  filesaver = this
+				, type = blob.type
+				, blob_changed = false
+				, object_url
+				, target_view
+				, dispatch_all = function() {
+					dispatch(filesaver, "writestart progress write writeend".split(" "));
+				}
+				// on any filesys errors revert to saving with object URLs
+				, fs_error = function() {
+					// don't create more object URLs than needed
+					if (blob_changed || !object_url) {
+						object_url = get_URL().createObjectURL(blob);
+					}
+					if (target_view) {
+						target_view.location.href = object_url;
+					} else {
+						var new_tab = view.open(object_url, "_blank");
+						if (new_tab == undefined && typeof safari !== "undefined") {
+							//Apple do not allow window.open, see http://bit.ly/1kZffRI
+							view.location.href = object_url
+						}
+					}
+					filesaver.readyState = filesaver.DONE;
+					dispatch_all();
+					revoke(object_url);
+				}
+				, abortable = function(func) {
+					return function() {
+						if (filesaver.readyState !== filesaver.DONE) {
+							return func.apply(this, arguments);
+						}
+					};
+				}
+				, create_if_not_found = {create: true, exclusive: false}
+				, slice
+			;
+			filesaver.readyState = filesaver.INIT;
+			if (!name) {
+				name = "download";
+			}
+			if (can_use_save_link) {
+				object_url = get_URL().createObjectURL(blob);
+				save_link.href = object_url;
+				save_link.download = name;
+				click(save_link);
+				filesaver.readyState = filesaver.DONE;
+				dispatch_all();
+				revoke(object_url);
+				return;
+			}
+			// Object and web filesystem URLs have a problem saving in Google Chrome when
+			// viewed in a tab, so I force save with application/octet-stream
+			// http://code.google.com/p/chromium/issues/detail?id=91158
+			// Update: Google errantly closed 91158, I submitted it again:
+			// https://code.google.com/p/chromium/issues/detail?id=389642
+			if (view.chrome && type && type !== force_saveable_type) {
+				slice = blob.slice || blob.webkitSlice;
+				blob = slice.call(blob, 0, blob.size, force_saveable_type);
+				blob_changed = true;
+			}
+			// Since I can't be sure that the guessed media type will trigger a download
+			// in WebKit, I append .download to the filename.
+			// https://bugs.webkit.org/show_bug.cgi?id=65440
+			if (webkit_req_fs && name !== "download") {
+				name += ".download";
+			}
+			if (type === force_saveable_type || webkit_req_fs) {
+				target_view = view;
+			}
+			if (!req_fs) {
+				fs_error();
+				return;
+			}
+			fs_min_size += blob.size;
+			req_fs(view.TEMPORARY, fs_min_size, abortable(function(fs) {
+				fs.root.getDirectory("saved", create_if_not_found, abortable(function(dir) {
+					var save = function() {
+						dir.getFile(name, create_if_not_found, abortable(function(file) {
+							file.createWriter(abortable(function(writer) {
+								writer.onwriteend = function(event) {
+									target_view.location.href = file.toURL();
+									filesaver.readyState = filesaver.DONE;
+									dispatch(filesaver, "writeend", event);
+									revoke(file);
+								};
+								writer.onerror = function() {
+									var error = writer.error;
+									if (error.code !== error.ABORT_ERR) {
+										fs_error();
+									}
+								};
+								"writestart progress write abort".split(" ").forEach(function(event) {
+									writer["on" + event] = filesaver["on" + event];
+								});
+								writer.write(blob);
+								filesaver.abort = function() {
+									writer.abort();
+									filesaver.readyState = filesaver.DONE;
+								};
+								filesaver.readyState = filesaver.WRITING;
+							}), fs_error);
+						}), fs_error);
+					};
+					dir.getFile(name, {create: false}, abortable(function(file) {
+						// delete file if it already exists
+						file.remove();
+						save();
+					}), abortable(function(ex) {
+						if (ex.code === ex.NOT_FOUND_ERR) {
+							save();
+						} else {
+							fs_error();
+						}
+					}));
+				}), fs_error);
+			}), fs_error);
+		}
+		, FS_proto = FileSaver.prototype
+		, saveAs = function(blob, name) {
+			return new FileSaver(blob, name);
+		}
+	;
+	FS_proto.abort = function() {
+		var filesaver = this;
+		filesaver.readyState = filesaver.DONE;
+		dispatch(filesaver, "abort");
+	};
+	FS_proto.readyState = FS_proto.INIT = 0;
+	FS_proto.WRITING = 1;
+	FS_proto.DONE = 2;
+
+	FS_proto.error =
+	FS_proto.onwritestart =
+	FS_proto.onprogress =
+	FS_proto.onwrite =
+	FS_proto.onabort =
+	FS_proto.onerror =
+	FS_proto.onwriteend =
+		null;
+
+	return saveAs;
+}(
+	   typeof self !== "undefined" && self
+	|| typeof window !== "undefined" && window
+	|| this.content
+));
+// `self` is undefined in Firefox for Android content script context
+// while `this` is nsIContentFrameMessageManager
+// with an attribute `content` that corresponds to the window
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = saveAs;
+} else if ((typeof define !== "undefined" && define !== null) && (define.amd != null)) {
+  define([], function() {
+    return saveAs;
+  });
+}
+
+},{}],14:[function(require,module,exports){
 /*
  * forbject
  * http://github.amexpub.com/modules/forbject
@@ -1841,7 +2087,7 @@ module.exports={
 
 module.exports = require('./lib/forbject');
 
-},{"./lib/forbject":14}],14:[function(require,module,exports){
+},{"./lib/forbject":15}],15:[function(require,module,exports){
 /*
  * forbject
  * http://github.com/yawetse/forbject
@@ -1956,6 +2202,7 @@ forbject.prototype.setForm = function () {
 forbject.prototype.setFormElements = function () {
 	var autoRefreshOnValChange = function () {
 		this.refresh();
+		this.emit('autoRefreshOnValChange',this.getObject());
 	}.bind(this);
 	this.$formElements = this.$form.querySelectorAll('input, button, textarea, select');
 	if (this.options.autorefresh === true) {
@@ -2093,11 +2340,11 @@ forbject.prototype.setFormObj = function () {
 };
 module.exports = forbject;
 
-},{"events":17,"util":22,"util-extend":15}],15:[function(require,module,exports){
+},{"events":18,"util":23,"util-extend":16}],16:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],16:[function(require,module,exports){
+},{"dup":5}],17:[function(require,module,exports){
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -2400,7 +2647,7 @@ function isUndefined(arg) {
   return arg === void 0;
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
   module.exports = function inherits(ctor, superCtor) {
@@ -2425,7 +2672,7 @@ if (typeof Object.create === 'function') {
   }
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -2653,7 +2900,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":20}],20:[function(require,module,exports){
+},{"_process":21}],21:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -2712,14 +2959,14 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 module.exports = function isBuffer(arg) {
   return arg && typeof arg === 'object'
     && typeof arg.copy === 'function'
     && typeof arg.fill === 'function'
     && typeof arg.readUInt8 === 'function';
 }
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 (function (process,global){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -3309,7 +3556,7 @@ function hasOwnProperty(obj, prop) {
 }
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./support/isBuffer":21,"_process":20,"inherits":18}],23:[function(require,module,exports){
+},{"./support/isBuffer":22,"_process":21,"inherits":19}],24:[function(require,module,exports){
 (function (global){
 //! moment.js
 //! version : 2.9.0
@@ -6356,13 +6603,13 @@ function hasOwnProperty(obj, prop) {
 }).call(this);
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 module.exports.Entry = require('./lib/entry');
 module.exports.Batch = require('./lib/batch');
 module.exports.File  = require('./lib/file');
 module.exports.Utils  = require('./lib/utils');
 module.exports.Validate  = require('./lib/validate');
-},{"./lib/batch":27,"./lib/entry":29,"./lib/file":33,"./lib/utils":34,"./lib/validate":35}],25:[function(require,module,exports){
+},{"./lib/batch":28,"./lib/entry":30,"./lib/file":34,"./lib/utils":35,"./lib/validate":36}],26:[function(require,module,exports){
 module.exports = {
 	recordTypeCode: {
 		name: 'Record Type Code',
@@ -6465,7 +6712,7 @@ module.exports = {
 		value: 8
 	}
 };
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = {
 	recordTypeCode: {
 		name: 'Record Type Code',
@@ -6586,7 +6833,7 @@ module.exports = {
 		value: 0
 	}
 };
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 // Batch
 
 var _ = require('lodash');
@@ -6769,7 +7016,7 @@ Batch.prototype.set = function(field, value) {
 };
 
 module.exports = Batch;
-},{"./../utils":34,"./../validate":35,"./control":25,"./header":26,"async":36,"lodash":37}],28:[function(require,module,exports){
+},{"./../utils":35,"./../validate":36,"./control":26,"./header":27,"async":37,"lodash":38}],29:[function(require,module,exports){
 module.exports = {
 	recordTypeCode: {
 		name: 'Record Type Code',
@@ -6871,7 +7118,7 @@ module.exports = {
 		value: ''
 	}
 };
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 // Entry
 
 var _ = require('lodash');
@@ -6961,7 +7208,7 @@ Entry.prototype.set = function(category, value) {
 };
 
 module.exports = Entry;
-},{"./../utils":34,"./../validate":35,"./fields":28,"lodash":37}],30:[function(require,module,exports){
+},{"./../utils":35,"./../validate":36,"./fields":29,"lodash":38}],31:[function(require,module,exports){
 'use strict';
 // Create a new object, that prototypally inherits from the Error constructor.
 var nACHError = function(errorObj) {
@@ -6972,7 +7219,7 @@ nACHError.prototype = Object.create(Error.prototype);
 nACHError.prototype.constructor = nACHError;
 
 module.exports = nACHError;
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 module.exports = {
 	recordTypeCode: {
 		name: 'Record Type Code',
@@ -7041,7 +7288,7 @@ module.exports = {
 		value: ''
 	}
 };
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 var utils = require('../utils');
 
 module.exports = {
@@ -7164,9 +7411,9 @@ module.exports = {
 		value: ''
 	}
 };
-},{"../utils":34}],33:[function(require,module,exports){
+},{"../utils":35}],34:[function(require,module,exports){
 // File
-
+'use strict';
 var _ = require('lodash');
 var async = require('async');
 var utils = require('../utils');
@@ -7176,7 +7423,7 @@ var batchSequenceNumber = 0
 var highLevelOverrides = ['immediateDestination','immediateOrigin','fileCreationDate','fileCreationTime','fileIdModifier','immediateDestinationName','immediateOriginName','referenceCode'];
 
 function File(options) {
-	this._batches = [];
+	this._batches =  [];//(typeof options._batches !=='undefined') ? options._batches : [];
 
 	// Allow the batch header/control defaults to be overriden if provided
 	this.header = options.header ? _.merge(options.header, require('./header'), _.defaults) : _.cloneDeep(require('./header'));
@@ -7345,7 +7592,7 @@ File.prototype.generateFile = function(cb) {
 };
 
 module.exports = File;
-},{"../utils":34,"../validate":35,"./control":31,"./header":32,"async":36,"lodash":37}],34:[function(require,module,exports){
+},{"../utils":35,"../validate":36,"./control":32,"./header":33,"async":37,"lodash":38}],35:[function(require,module,exports){
 // Utility Functions
 
 var _ = require('lodash');
@@ -7506,7 +7753,7 @@ module.exports.overrideLowLevel    = overrideLowLevel;
 module.exports.computeCheckDigit   = computeCheckDigit;
 module.exports.computeBusinessDay  = computeBusinessDay;
 module.exports.getNextMultipleDiff = getNextMultipleDiff;
-},{"./error":30,"lodash":37,"moment":38}],35:[function(require,module,exports){
+},{"./error":31,"lodash":38,"moment":39}],36:[function(require,module,exports){
 //TODO: Maybe validate position with indexes
 
 var _                    = require('lodash')
@@ -7633,7 +7880,7 @@ module.exports.validateACHCode             = validateACHCode;
 module.exports.validateACHServiceClassCode = validateACHServiceClassCode;
 module.exports.validateRoutingNumber       = validateRoutingNumber;
 module.exports.getNextMultipleDiff         = getNextMultipleDiff;
-},{"./error":30,"./utils":34,"lodash":37}],36:[function(require,module,exports){
+},{"./error":31,"./utils":35,"lodash":38}],37:[function(require,module,exports){
 (function (process){
 /*!
  * async
@@ -8760,7 +9007,7 @@ module.exports.getNextMultipleDiff         = getNextMultipleDiff;
 }());
 
 }).call(this,require('_process'))
-},{"_process":20}],37:[function(require,module,exports){
+},{"_process":21}],38:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -15549,9 +15796,9 @@ module.exports.getNextMultipleDiff         = getNextMultipleDiff;
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],38:[function(require,module,exports){
-arguments[4][23][0].apply(exports,arguments)
-},{"dup":23}],39:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
+arguments[4][24][0].apply(exports,arguments)
+},{"dup":24}],40:[function(require,module,exports){
 /*
  * stylie.notifications
  * https://github.com/typesettin/stylie.notifications
@@ -15563,7 +15810,7 @@ arguments[4][23][0].apply(exports,arguments)
 
 module.exports = require('./lib/stylie.notifications');
 
-},{"./lib/stylie.notifications":40}],40:[function(require,module,exports){
+},{"./lib/stylie.notifications":41}],41:[function(require,module,exports){
 /*
  * stylie.notifications
  * https://github.com/typesettin/stylie.notifications
@@ -15749,9 +15996,9 @@ StylieNotifications.prototype._show = function () {
 };
 module.exports = StylieNotifications;
 
-},{"classie":6,"detectcss":8,"events":17,"util":22,"util-extend":41}],41:[function(require,module,exports){
+},{"classie":6,"detectcss":8,"events":18,"util":23,"util-extend":42}],42:[function(require,module,exports){
 arguments[4][5][0].apply(exports,arguments)
-},{"dup":5}],42:[function(require,module,exports){
+},{"dup":5}],43:[function(require,module,exports){
 'use strict';
 
 var achBatchCount = 0,
@@ -15767,7 +16014,9 @@ var achBatchCount = 0,
 	expandButton,
 	ejs = require('ejs'),
 	forbject = require('forbject'),
+	loadNachieFile,
 	tsACHFileContainer,
+	tsACHFileContainerTopPos,
 	moment = require('moment'),
 	nach = require('nach'),
 	newACHBatch,
@@ -15775,6 +16024,7 @@ var achBatchCount = 0,
 	notification,
 	optionalButton,
 	optionalInputs,
+	saveAs = require('filesaver.js'),
 	StylieNotification = require('stylie.notifications'),
 	utils = nach.Utils;
 
@@ -15790,6 +16040,59 @@ var showNotification = function (e) {
 		type: 'notice'
 	});
 	notification.show();
+};
+
+var downloadACH = function () {
+	var blob = new Blob([achFileOutput.innerHTML], {
+		type: 'text/plain;charset=utf-8'
+	});
+	saveAs(blob, 'nACHa.txt');
+	showNotification({
+		type: 'File Saved',
+		message: 'nACHa file saved'
+	});
+};
+var saveACH = function () {
+	console.log('achFile', achFile);
+	// var saveACHObject = {},
+	// 	saveACHBatches = [],
+	// 	getEntryValues = function(entryObject){
+	// 		var returnEntryObject={};
+	// 		for (var entryFieldProp in entryObject.fields) {
+	// 			returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
+	// 		}
+	// 		return returnEntryObject;
+	// 	},
+	// 	getBatchValues = function (batchObject) {
+	// 		console.log('batchObject', batchObject);
+	// 		var returnBatchObject = {};
+	// 		for (var batchHeaderProp in batchObject.header) {
+	// 			returnBatchObject[batchHeaderProp] = batchObject.header[batchHeaderProp].value;
+	// 		}
+	// 		if(batchObject._entries.length>0){
+	// 			returnBatchObject.entries=[];
+	// 			for (var d = 0; d < batchObject._entries.length; d++) {
+	// 				returnBatchObject.entries[d] = getEntryValues(batchObject._entries[d]);
+	// 			}
+	// 		}
+	// 		return returnBatchObject;
+	// 	};
+	// for (var headerprop in achFile.header) {
+	// 	saveACHObject[headerprop] = achFile.header[headerprop].value;
+	// }
+	// for (var c = 0; c < achFile._batches.length; c++) {
+	// 	saveACHBatches[c] = getBatchValues(achFile._batches[c]);
+	// }
+	// saveACHObject.batches = saveACHBatches;
+	// console.log('saveACHObject', saveACHObject);
+	var blob = new Blob([JSON.stringify(achFile, null, '  ')], {
+		type: 'application/json;charset=utf-8'
+	});
+	saveAs(blob, 'nachie.json');
+	showNotification({
+		type: 'File Saved',
+		message: 'Nachie file saved'
+	});
 };
 
 var showOptionalInput = function () {
@@ -15830,36 +16133,48 @@ var addACHBatch = function () {
 					formdata: achForbject.getObject()
 				}
 			},
-			// forbjectData: achForbject.getObject()
 		}
 	});
+	achForbject.refresh();
 	achBatchCount++;
+};
+
+var updateNachieOutput = function (achFile) {
+	try {
+		achFile.generateFile(function (fileString) {
+			achFileOutput.innerHTML = fileString;
+		});
+	}
+	catch (e) {
+		showNotification(e);
+		console.error(e);
+	}
 };
 
 var updateNach = function (data) {
 	try {
+		// console.log('updateNach data', data);
 		achFile = new nach.File(data.file);
 
-		if (data.batch) {
-			for (var z in data.batch) {
-				// console.log(data.batch[z]);
-				data.batch[z].effectiveEntryDate = moment(data.batch[z].effectiveEntryDate, 'YYMMDD').toDate();
-				newACHBatch = new nach.Batch(data.batch[z]);
+		if (data.batches) {
+			for (var z in data.batches) {
+				// console.log('data.batches[z]', data.batches[z]);
+				data.batches[z].effectiveEntryDate = moment(data.batches[z].effectiveEntryDate, 'YYMMDD').toDate();
+				newACHBatch = new nach.Batch(data.batches[z]);
 
-				if (data.batch[z].entries) {
-					// console.log('data.batch[z].entries', data.batch[z].entries);
-					for (var y in data.batch[z].entries) {
-						newACHEntry = new nach.Entry(data.batch[z].entries[y]);
+				if (data.batches[z].entries) {
+					// console.log('data.batches[z].entries', data.batches[z].entries);
+					for (var y in data.batches[z].entries) {
+						newACHEntry = new nach.Entry(data.batches[z].entries[y]);
 						newACHBatch.addEntry(newACHEntry);
 					}
 				}
+				// console.log('achFile.addBatch', achFile.addBatch);
 				achFile.addBatch(newACHBatch);
 			}
 		}
-
-		achFile.generateFile(function (fileString) {
-			achFileOutput.innerHTML = fileString;
-		});
+		// console.log('achFile', achFile);
+		updateNachieOutput();
 	}
 	catch (e) {
 		showNotification(e);
@@ -15886,6 +16201,12 @@ var achBatchContainerClickHandler = function (e) {
 		achBatchCount--;
 		achForbject.refresh();
 	}
+	else if (classie.has(clickTarget, 'remove-batchentry-button')) {
+		batchIndex = clickTarget.getAttribute('data-batchIndex');
+		entryIndex = clickTarget.getAttribute('data-entryIndex');
+		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).removeChild(document.querySelector('#ach-batchentry-' + batchIndex + '-' + entryIndex));
+		achForbject.refresh();
+	}
 	else if (classie.has(clickTarget, 'add-batch-entry-button')) {
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		batchElement = document.querySelector('#ach-batch-' + batchIndex);
@@ -15893,9 +16214,16 @@ var achBatchContainerClickHandler = function (e) {
 		elementsInBatch = batchElement.querySelectorAll('.ach-batchentry');
 		// entryIndex = (elementsInBatch.length > 0) ? (elementsInBatch.length - 1) : 0;
 		entryIndex = elementsInBatch.length;
+		console.log('entryIndex', entryIndex);
+		console.log('elementsInBatch', elementsInBatch);
+		console.log('elementsInBatch.length', elementsInBatch.length);
 		entryhtml = ejs.render(batchEntryTemplate, {
 			batchIndex: batchIndex,
-			entryIndex: entryIndex
+			entryIndex: entryIndex,
+			entriesCount: elementsInBatch.length + 1,
+			forbjectData: {
+				formdata: achForbject.getObject()
+			}
 		});
 		entryHtmlElement.setAttribute('class', 'ach-batchentry ts-form-row');
 		entryHtmlElement.setAttribute('id', 'ach-batchentry-' + batchIndex + '-' + entryIndex);
@@ -15903,8 +16231,103 @@ var achBatchContainerClickHandler = function (e) {
 		entryHtmlElement.setAttribute('data-entryIndex', entryIndex);
 		//id="ach-batchentry-<?-batchIndex?>-<?-entryIndex?>"
 		entryHtmlElement.innerHTML = entryhtml;
-		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).appendChild(entryHtmlElement);
+		// document.querySelector('#ach-batch-entrycontainer-' + batchIndex).appendChild(entryHtmlElement);
+		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).innerHTML = '<section class="ach-batchentry ts-form-row" id="ach-batchentry-' + batchIndex + '-' + entryIndex + '" data-batchindex="' + batchIndex + '" data-entryindex="' + entryIndex + '">' + entryhtml + '</section>';
+		achForbject.refresh();
 	}
+};
+
+var moveACHFileOutput = function () {
+	if (window.scrollY > tsACHFileContainerTopPos && !classie.has(tsACHFileContainer, 'ach-fix-top')) {
+		classie.add(tsACHFileContainer, 'ach-fix-top');
+	}
+	else if (window.scrollY < tsACHFileContainerTopPos && classie.has(tsACHFileContainer, 'ach-fix-top')) {
+		classie.remove(tsACHFileContainer, 'ach-fix-top');
+	}
+};
+
+var loadNachieFromObject = function (nachie) {
+	// console.log('nachie', nachie);
+	var data = {},
+		getEntryValues = function (entryObject) {
+			var returnEntryObject = {};
+			for (var entryFieldProp in entryObject.fields) {
+				returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
+			}
+			return returnEntryObject;
+		},
+		getBatchValues = function (batchObject) {
+			var returnBatchObject = {};
+			for (var batchHeaderProp in batchObject.header) {
+				returnBatchObject[batchHeaderProp] = batchObject.header[batchHeaderProp].value;
+			}
+			if (batchObject._entries.length > 0) {
+				returnBatchObject.entries = [];
+				for (var d = 0; d < batchObject._entries.length; d++) {
+					returnBatchObject.entries[d] = getEntryValues(batchObject._entries[d]);
+				}
+			}
+			return returnBatchObject;
+		};
+
+	try {
+		//createfile
+		for (var headerprop in nachie.header) {
+			data[headerprop] = nachie.header[headerprop].value;
+		}
+		achFile = new nach.File(data);
+
+		if (nachie._batches) {
+			for (var z = 0; z < nachie._batches.length; z++) {
+				nachie._batches[z] = getBatchValues(nachie._batches[z]);
+				nachie._batches[z].effectiveEntryDate = moment(nachie._batches[z].effectiveEntryDate, 'YYMMDD').toDate();
+				//createbatches
+				newACHBatch = new nach.Batch(nachie._batches[z]);
+				console.log('newACHBatch', newACHBatch);
+				if (nachie._batches[z].entries) {
+					// console.log('nachie._batches[z].entries', nachie._batches[z].entries);
+					for (var y in nachie._batches[z].entries) {
+						//createentries
+						newACHEntry = new nach.Entry(nachie._batches[z].entries[y]);
+						console.log('newACHEntry', newACHEntry);
+						//addentriestobatch
+						newACHBatch.addEntry(newACHEntry);
+					}
+				}
+				//addbatchtofile
+				achFile.addBatch(newACHBatch);
+			}
+		}
+
+		//updateoutput
+		updateNachieOutput(achFile);
+	}
+	catch (e) {
+		showNotification(e);
+		console.error(e);
+	}
+};
+
+var loadNachieFileHandler = function () {
+	var file = loadNachieFile.files[0],
+		filereader = new FileReader(),
+		fileJSON;
+	filereader.readAsText(file);
+	filereader.onload = function () {
+		try {
+			fileJSON = JSON.parse(filereader.result);
+			loadNachieFromObject(fileJSON);
+
+			showNotification({
+				type: 'File Loaded',
+				message: 'nACHa file loaded'
+			});
+		}
+		catch (e) {
+			showNotification(e);
+			console.error(e);
+		}
+	};
 };
 
 window.addEventListener('load', function () {
@@ -15935,7 +16358,7 @@ window.addEventListener('load', function () {
 			}
 		}
 	});
-	achForbject.on('refresh', updateNach);
+	achForbject.on('autoRefreshOnValChange', updateNach);
 	addBatchButton = document.querySelector('#add-batch-button');
 	addBatchButton.addEventListener('click', addACHBatch, false);
 	achBatchContainer = document.querySelector('#ach-file-batches');
@@ -15943,18 +16366,19 @@ window.addEventListener('load', function () {
 	batchEntryTemplate = document.querySelector('#ach-batch-entrytemplate').innerHTML;
 	expandButton = document.querySelector('#expand-button');
 	expandButton.addEventListener('click', expandACHOutput, false);
+	loadNachieFile = document.querySelector('#load-button');
+	loadNachieFile.addEventListener('change', loadNachieFileHandler, false);
 	optionalButton = document.querySelector('#optional-button');
 	optionalButton.addEventListener('click', showOptionalInput, false);
 	optionalInputs = document.querySelectorAll('.ts-form-optional');
 	tsACHFileContainer = document.querySelector('#ts-ach-file-container');
+	tsACHFileContainerTopPos = tsACHFileContainer.getBoundingClientRect().top;
 	initDefaultValues();
+	document.querySelector('#download-button').addEventListener('click', downloadACH, false);
+	document.querySelector('#save-button').addEventListener('click', saveACH, false);
 	window.achForbject = achForbject;
-	// try {
-
-	// }
-	// catch (e) {
-	// 	showNotification(e);
-	// }
+	window.achFile = achFile;
+	window.addEventListener('scroll', moveACHFileOutput, false);
 }, false);
 
-},{"bindie":1,"classie":6,"ejs":10,"forbject":13,"moment":23,"nach":24,"stylie.notifications":39}]},{},[42]);
+},{"bindie":1,"classie":6,"ejs":10,"filesaver.js":13,"forbject":14,"moment":24,"nach":25,"stylie.notifications":40}]},{},[43]);

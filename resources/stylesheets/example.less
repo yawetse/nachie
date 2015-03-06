@@ -18,6 +18,9 @@ hr{
 		width:100%;
 		
 	}
+	&.ach-fix-top{
+		position: fixed;
+	}
 }
 form#ach{
 	//margin-top:@sizemd;
@@ -26,6 +29,9 @@ form#ach{
 pre#ach-file-output{
 	overflow: auto;
 	word-break:break-word;
+}
+#expand-button,#save-button{
+	margin-right:@sizemd;
 }
 .ts{
 	.ts-form-optional{
@@ -47,8 +53,10 @@ pre#ach-file-output{
 		// .ts-border-divider-text-color;
 		.ts-text-dark-primary-color;
 		background-color: @textPrimaryColor;
-		.ts-border-dark-primary-color;
+		.ts-border-accent-color;
+		color:@accentColor;
 		.ts-formelement-border;
+		border-color: @accentColor;
 		padding:0 @sizemd;
 		cursor:pointer;
 		&:hover{
