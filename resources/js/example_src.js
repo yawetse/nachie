@@ -8,7 +8,7 @@ var achBatchContainer,
 	achForbject,
 	Bindie = require('bindie'),
 	classie = require('classie'),
-	dummydata = require('./dummydata'),
+	dummydata = require('./dummydata2'),
 	expandButton,
 	ejs = require('ejs'),
 	forbject = require('forbject'),
@@ -22,9 +22,24 @@ var achBatchContainer,
 	notification,
 	optionalInputs,
 	saveAs = require('filesaver.js'),
-	StylieNotification = require('stylie.notifications');
+	StylieNotification = require('stylie.notifications'),
+	utils = nach.Utils;
 
 ejs.delimiter = '?';
+
+var removeEmptyObjectValues = function (obj) {
+	for (var property in obj) {
+		if (typeof obj[property] === 'object') {
+			removeEmptyObjectValues(obj[property]);
+		}
+		else {
+			if (obj[property] === '' || obj[property] === ' ' || obj[property] === null || obj[property] === undefined || Object.keys(obj).length === 0) {
+				delete obj[property];
+			}
+		}
+	}
+	return obj;
+};
 
 var showNotification = function (e) {
 	notification = new StylieNotification({
@@ -80,7 +95,6 @@ var updateNachieOutput = function (achFile) {
 				achFile: achFile
 			}
 		});
-		// achForbject.refresh();
 	}
 	catch (e) {
 		showNotification(e);
@@ -120,7 +134,7 @@ var getEntryValues = function (entryObject) {
 	for (var entryFieldProp in entryObject.fields) {
 		returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
 	}
-	return returnEntryObject;
+	return removeEmptyObjectValues(returnEntryObject);
 };
 
 var getBatchValues = function (batchObject) {
@@ -135,7 +149,7 @@ var getBatchValues = function (batchObject) {
 			returnBatchObject.entries[d] = getEntryValues(batchEntries[d]);
 		}
 	}
-	return returnBatchObject;
+	return removeEmptyObjectValues(returnBatchObject);
 };
 
 var addACHBatch = function () {
@@ -149,27 +163,28 @@ var addACHBatch = function () {
 
 var achBatchContainerClickHandler = function (e) {
 	var clickTarget = e.target,
-		batchIndex, entryIndex;
+		batchIndex, entryIndex,
+		refreshOutput = function () {
+			achForbject.refresh();
+			updateNachOnFormChange(achForbject.getObject());
+		};
 
 	if (classie.has(clickTarget, 'remove-batch-button')) {
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		achBatchContainer.removeChild(document.querySelector('#ach-batch-' + batchIndex));
-		achForbject.refresh();
+		refreshOutput();
 	}
 	else if (classie.has(clickTarget, 'remove-batchentry-button')) {
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		entryIndex = clickTarget.getAttribute('data-entryIndex');
 		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).removeChild(document.querySelector('#ach-batchentry-' + batchIndex + '-' + entryIndex));
-		achForbject.refresh();
+		refreshOutput();
 	}
 	else if (classie.has(clickTarget, 'add-batch-entry-button')) {
 		var nachieBatchEntry = dummydata._batches[0].entries[0];
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
-		console.log('batchIndex', batchIndex);
-		console.log('before achFile', achFile);
 		newACHEntry = new nach.Entry(nachieBatchEntry);
 		achFile._batches[batchIndex].addEntry(newACHEntry);
-		console.log('after achFile', achFile);
 		updateNachieOutput(achFile);
 	}
 };
@@ -256,7 +271,6 @@ window.addEventListener('load', function () {
 		binderType: 'template',
 		binderTemplate: document.querySelector('#ach-form-template').innerHTML,
 		binderCallback: function ( /*cbdata*/ ) {
-			// updateOptionalInputs();
 			achForbject.refresh();
 			initEvents();
 			// console.log('binderCallback cbdata', cbdata);
