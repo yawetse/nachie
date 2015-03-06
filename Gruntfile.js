@@ -36,7 +36,7 @@ module.exports = function (grunt) {
 			]
 		},
 		jsbeautifier: {
-			files: ['<%= jshint.all %>', '!resources/template/stylie_notifications.ejs'],
+			files: ['<%= jshint.all %>', '!resources/template/shared/_ach_entry_partial.ejs', '!resources/template/shared/_ach_batches_template.ejs'],
 			options: {
 				config: '.jsbeautify'
 			}

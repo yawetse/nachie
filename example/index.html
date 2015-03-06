@@ -111,6 +111,8 @@
           <div id="ts-ach-file-container" class="ts-col-span6 ts-screenmd-col-span12">
             <div class="ts-row ">
               <h4 class="ts-pull-left">ACH File</h4>
+              <small id="download-button" class="ts-button ts-text-xs ts-pull-right">download</small>
+              <small id="save-button" class="ts-button ts-text-xs ts-pull-right">save</small>
               <small id="expand-button" class="ts-button ts-text-xs ts-pull-right">expand</small>
             </div>
             <pre id="ach-file-output" class="ts-bg-primary-text-color ts-text-text-primary-color ts-padding-md ts-text-xs ts-no-x-overflow">ACH file</pre>
@@ -120,153 +122,281 @@
     </article>
   </main>
   <footer class="ts-container">
-    <section>
+    <section class="ts-text-container">
       <strong> Full API <a href="http://typesettin.github.io/nachie/api/html">documentation</a>
       </strong>
     </section>
   </footer>
   <script id="ach-batch-entrytemplate" type="text/template">
   <? batchentryPrefix='batchentry-' +batchIndex+ '-'+entryIndex+ '-'; ?>
+  <? 
+var existingEntriesTest = (typeof entriesCount === 'undefined' && forbtest && forbjectData.formdata.batches[batchIndex].entries);
+if(existingEntriesTest){
+  entriesCount = 0;
+  for(var prop in forbjectData.formdata.batches[batchIndex].entries){
+    entriesCount++;
+  };
+  forbtest = false;
+}
 
-  <hr>
+if(typeof entriesCount !=='undefined'  && typeof batchIndex !=='undefined' ){ 
+  for(var b=0; b< entriesCount; b++){ 
+  entryIndex=b ;
+
+    forbtest=(forbjectData.formdata.batches && forbjectData.formdata.batches[batchIndex]&& forbjectData.formdata.batches[batchIndex]['entries']&& forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]); 
+
+   ?>
+
+<?if(existingEntriesTest){?>
+  <section class="ach-batchentry ts-form-row" id="ach-batchentry-<?-batchIndex?>-<?-entryIndex?>" data-batchindex="<?-batchIndex?>" data-entryindex="<?-entryIndex?>">
+<?}?>
+<hr>
 <div class="ts-row ts-text-sm">
   <h6 class="ts-pull-left">Batch
     <?-batchIndex?> - Entry
       <?-entryIndex?>
   </h6>
+  <small data-batchIndex="<?-batchIndex?>" data-entryIndex="<?-entryIndex?>" id="remove-batch-button-<?-batchentryPrefix?>" class="ts-button ts-text-xs ts-pull-right remove-button remove-batchentry-button">remove batch entry</small>
 </div>
 <section class="ts-form-row">
   <div class="ts-col-span6 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>recordTypeCode">Record Type Code</label>
-    <input id="<?- batchentryPrefix ?>recordTypeCode" class="ts-input <?- batchentryPrefix ?>recordTypeCode" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][recordTypeCode]" value="6" maxlength="1" />
+    <input id="<?- batchentryPrefix ?>recordTypeCode" class="ts-input <?- batchentryPrefix ?>recordTypeCode" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][recordTypeCode]" value="6" maxlength="1" />
   </div>
   <div class="ts-col-span6 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>transactionCode">Transaction Code</label>
-    <input id="<?- batchentryPrefix ?>transactionCode" class="ts-input <?- batchentryPrefix ?>transactionCode" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][transactionCode]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['transactionCode']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['transactionCode']?><?}else{?>22<?}?>" />
+    <input id="<?- batchentryPrefix ?>transactionCode" class="ts-input <?- batchentryPrefix ?>transactionCode" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][transactionCode]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['transactionCode']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['transactionCode']?><?}else{?>22<?}?>" />
   </div>
 </section>
 <section class="ts-form-row">
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>receivingDFI">Receiving DFI Identification</label>
-    <input id="<?- batchentryPrefix ?>receivingDFI" class="ts-input <?- batchentryPrefix ?>receivingDFI" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][receivingDFI]" maxlength="8" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['receivingDFI']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['receivingDFI']?><?}else{?>081000210<?}?>" />
+    <input id="<?- batchentryPrefix ?>receivingDFI" class="ts-input <?- batchentryPrefix ?>receivingDFI" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][receivingDFI]" maxlength="8" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['receivingDFI']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['receivingDFI']?><?}else{?>081000210<?}?>" />
   </div>
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>checkDigit">Check Digit</label>
-    <input id="<?- batchentryPrefix ?>checkDigit" class="ts-input <?- batchentryPrefix ?>checkDigit" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][checkDigit]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['checkDigit']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['checkDigit']?><?}else{?>9<?}?>" />
+    <input id="<?- batchentryPrefix ?>checkDigit" class="ts-input <?- batchentryPrefix ?>checkDigit" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][checkDigit]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['checkDigit']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['checkDigit']?><?}else{?>9<?}?>" />
   </div>
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>DFIAccount">DFI Account Number</label>
-    <input id="<?- batchentryPrefix ?>DFIAccount" class="ts-input <?- batchentryPrefix ?>DFIAccount" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][DFIAccount]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['DFIAccount']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['DFIAccount']?><?}else{?>12345678901234567<?}?>" />
+    <input id="<?- batchentryPrefix ?>DFIAccount" class="ts-input <?- batchentryPrefix ?>DFIAccount" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][DFIAccount]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['DFIAccount']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['DFIAccount']?><?}else{?>12345678901234567<?}?>" />
   </div>
 </section>
 <section class="ts-form-row">
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>amount">Amount</label>
-    <input id="<?- batchentryPrefix ?>amount" class="ts-input <?- batchentryPrefix ?>amount" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][amount]" maxlength="10" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['amount']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['amount']?><?}else{?>35.23<?}?>" />
+    <input id="<?- batchentryPrefix ?>amount" class="ts-input <?- batchentryPrefix ?>amount" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][amount]" maxlength="10" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['amount']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['amount']?><?}else{?>35.23<?}?>" />
   </div>
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>idNumber">Individual Identification Number</label>
-    <input id="<?- batchentryPrefix ?>idNumber" class="ts-input <?- batchentryPrefix ?>idNumber" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][idNumber]" maxlength="15" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['idNumber']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['idNumber']?><?}else{?>RAj##23920rjf31<?}?>" />
+    <input id="<?- batchentryPrefix ?>idNumber" class="ts-input <?- batchentryPrefix ?>idNumber" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][idNumber]" maxlength="15" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['idNumber']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['idNumber']?><?}else{?>RAj##23920rjf31<?}?>" />
   </div>
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>individualName">Individual Name</label>
-    <input id="<?- batchentryPrefix ?>individualName" class="ts-input <?- batchentryPrefix ?>individualName" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][individualName]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['individualName']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['individualName']?><?}else{?>Glen Selle<?}?>" />
+    <input id="<?- batchentryPrefix ?>individualName" class="ts-input <?- batchentryPrefix ?>individualName" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][individualName]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['individualName']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['individualName']?><?}else{?>Glen Selle<?}?>" />
   </div>
 </section>
 <section class="ts-form-row">
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>discretionaryData">Discretionary Data</label>
-    <input id="<?- batchentryPrefix ?>discretionaryData" class="ts-input <?- batchentryPrefix ?>discretionaryData" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][discretionaryData]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['discretionaryData']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['discretionaryData']?><?}else{?>A1<?}?>" />
+    <input id="<?- batchentryPrefix ?>discretionaryData" class="ts-input <?- batchentryPrefix ?>discretionaryData" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][discretionaryData]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['discretionaryData']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['discretionaryData']?><?}else{?>A1<?}?>" />
   </div>
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>addendaId">Addenda Record Indicator</label>
-    <input id="<?- batchentryPrefix ?>addendaId" class="ts-input <?- batchentryPrefix ?>addendaId" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][addendaId]" maxlength="1" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['addendaId']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['addendaId']?><?}else{?>0<?}?>" />
+    <input id="<?- batchentryPrefix ?>addendaId" class="ts-input <?- batchentryPrefix ?>addendaId" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][addendaId]" maxlength="1" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['addendaId']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['addendaId']?><?}else{?>0<?}?>" />
   </div>
 
   <div class="ts-col-span4 ts-form-padding">
     <label class="ts-label" for="<?- batchentryPrefix ?>traceNumber">Trace Number</label>
-    <input id="<?- batchentryPrefix ?>traceNumber" class="ts-input <?- batchentryPrefix ?>traceNumber" name="batch[<?- batchIndex?>][entries][<?- entryIndex?>][traceNumber]" maxlength="15" value="<?if( forbtest && forbjectData.formdata.batch[batchIndex][entries][entryIndex]['traceNumber']){?><?-forbjectData.formdata.batch[batchIndex][entries][entryIndex]['traceNumber']?><?}else{?>021214860000001<?}?>" />
+    <input id="<?- batchentryPrefix ?>traceNumber" class="ts-input <?- batchentryPrefix ?>traceNumber" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][traceNumber]" maxlength="15" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['traceNumber']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['traceNumber']?><?}else{?>021214860000001<?}?>" />
   </div>
+</section>
+
+<?if(existingEntriesTest){?>
+</section>
+<?}?>
+  <? }
+  } ?>
 </script>
 <script id="ach-batch-template" type="text/template">
-  <? for(var a=0; a<=batchIndex;a++){ var batchPrefix='batch-' +a+ '-'; forbtest=(forbjectData.formdata.batch && forbjectData.formdata.batch[a]); ?>
+  <? console.log( 'batchIndex',batchIndex)?>
+  <? for(var a=0; a<=batchIndex;a++){ 
+    var batchPrefix='batch-' +a+ '-'; 
+    forbtest=(forbjectData.formdata.batches && forbjectData.formdata.batches[a]); 
+    ?>
   <section data-batchIndex="<?-a?>" id="ach-batch-<?-a?>" class="ach-batch ts-form-row">
     <hr>
     <div class="ts-row ">
       <h6 class="ts-pull-left">Batch
         <?-a?>
       </h6>
-      <small data-batchIndex="<?-a?>" id="remove-batch-button-<?-a?>" class="ts-button ts-text-xs ts-pull-right remove-batch-button">remove</small>
+      <small data-batchIndex="<?-a?>" id="remove-batch-button-<?-a?>" class="ts-button ts-text-xs ts-pull-right remove-button remove-batch-button">remove batch</small>
     </div>
     <section class="ts-form-row">
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>recordTypeCode">Record Type Code</label>
-        <input id="<?- batchPrefix ?>recordTypeCode" class="ts-input <?- batchPrefix ?>recordTypeCode" name="batch[<?- a?>][recordTypeCode]" value="5" maxlength="1" />
+        <input id="<?- batchPrefix ?>recordTypeCode" class="ts-input <?- batchPrefix ?>recordTypeCode" name="batches[<?- a?>][recordTypeCode]" value="5" maxlength="1" />
       </div>
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>serviceClassCode">Service Class Code</label>
-        <input id="<?- batchPrefix ?>serviceClassCode" class="ts-input <?- batchPrefix ?>serviceClassCode" name="batch[<?- a?>][serviceClassCode]" maxlength="3" value="<?if( forbtest && forbjectData.formdata.batch[a]['serviceClassCode']){?><?-forbjectData.formdata.batch[a]['serviceClassCode']?><?}else{?>220<?}?>" />
+        <input id="<?- batchPrefix ?>serviceClassCode" class="ts-input <?- batchPrefix ?>serviceClassCode" name="batches[<?- a?>][serviceClassCode]" maxlength="3" value="<?if( forbtest && forbjectData.formdata.batches[a]['serviceClassCode']){?><?-forbjectData.formdata.batches[a]['serviceClassCode']?><?}else{?>220<?}?>" />
       </div>
     </section>
     <section class="ts-form-row">
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>companyName">Company Name</label>
-        <input id="<?- batchPrefix ?>companyName" class="ts-input <?- batchPrefix ?>companyName" name="batch[<?- a?>][companyName]" maxlength="16" value="<?if( forbtest && forbjectData.formdata.batch[a]['companyName']){?><?-forbjectData.formdata.batch[a]['companyName']?><?}else{?>ACME INC<?}?>" />
+        <input id="<?- batchPrefix ?>companyName" class="ts-input <?- batchPrefix ?>companyName" name="batches[<?- a?>][companyName]" maxlength="16" value="<?if( forbtest && forbjectData.formdata.batches[a]['companyName']){?><?-forbjectData.formdata.batches[a]['companyName']?><?}else{?>ACME INC<?}?>" />
       </div>
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>companyDiscretionaryData">Company Discretionary Data</label>
-        <input id="<?- batchPrefix ?>companyDiscretionaryData" class="ts-input <?- batchPrefix ?>companyDiscretionaryData" name="batch[<?- a?>][companyDiscretionaryData]" maxlength="20" value="<?if( forbtest && forbjectData.formdata.batch[a]['companyDiscretionaryData']){?><?-forbjectData.formdata.batch[a]['companyDiscretionaryData']?><?}else{?> <?}?>" />
+        <input id="<?- batchPrefix ?>companyDiscretionaryData" class="ts-input <?- batchPrefix ?>companyDiscretionaryData" name="batches[<?- a?>][companyDiscretionaryData]" maxlength="20" value="<?if( forbtest && forbjectData.formdata.batches[a]['companyDiscretionaryData']){?><?-forbjectData.formdata.batches[a]['companyDiscretionaryData']?><?}else{?> <?}?>" />
       </div>
     </section>
     <section class="ts-form-row">
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>companyIdentification">Company Identification</label>
-        <input id="<?- batchPrefix ?>companyIdentification" class="ts-input <?- batchPrefix ?>companyIdentification" name="batch[<?- a?>][companyIdentification]" maxlength="10" value="<?if( forbtest && forbjectData.formdata.batch[a]['companyIdentification']){?><?-forbjectData.formdata.batch[a]['companyIdentification']?><?}else{?>471934319<?}?>" />
+        <input id="<?- batchPrefix ?>companyIdentification" class="ts-input <?- batchPrefix ?>companyIdentification" name="batches[<?- a?>][companyIdentification]" maxlength="10" value="<?if( forbtest && forbjectData.formdata.batches[a]['companyIdentification']){?><?-forbjectData.formdata.batches[a]['companyIdentification']?><?}else{?>471934319<?}?>" />
       </div>
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>standardEntryClassCode">Standard Entry Class Code</label>
-        <input id="<?- batchPrefix ?>standardEntryClassCode" class="ts-input <?- batchPrefix ?>standardEntryClassCode" name="batch[<?- a?>][standardEntryClassCode]" maxlength="3" value="<?if( forbtest && forbjectData.formdata.batch[a]['standardEntryClassCode']){?><?-forbjectData.formdata.batch[a]['standardEntryClassCode']?><?}else{?>PPD<?}?>" />
+        <input id="<?- batchPrefix ?>standardEntryClassCode" class="ts-input <?- batchPrefix ?>standardEntryClassCode" name="batches[<?- a?>][standardEntryClassCode]" maxlength="3" value="<?if( forbtest && forbjectData.formdata.batches[a]['standardEntryClassCode']){?><?-forbjectData.formdata.batches[a]['standardEntryClassCode']?><?}else{?>PPD<?}?>" />
       </div>
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>companyEntryDescription">Company Entry Description</label>
-        <input id="<?- batchPrefix ?>companyEntryDescription" class="ts-input <?- batchPrefix ?>companyEntryDescription" name="batch[<?- a?>][companyEntryDescription]" maxlength="10" value="<?if( forbtest && forbjectData.formdata.batch[a]['companyEntryDescription']){?><?-forbjectData.formdata.batch[a]['companyEntryDescription']?><?}else{?>NEW PAYMENT<?}?>" />
+        <input id="<?- batchPrefix ?>companyEntryDescription" class="ts-input <?- batchPrefix ?>companyEntryDescription" name="batches[<?- a?>][companyEntryDescription]" maxlength="10" value="<?if( forbtest && forbjectData.formdata.batches[a]['companyEntryDescription']){?><?-forbjectData.formdata.batches[a]['companyEntryDescription']?><?}else{?>NEW PAYMENT<?}?>" />
       </div>
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>companyDescriptiveDate">Company Descriptive Date</label>
-        <input id="<?- batchPrefix ?>companyDescriptiveDate" class="ts-input <?- batchPrefix ?>companyDescriptiveDate" name="batch[<?- a?>][companyDescriptiveDate]" maxlength="6" value="<?if( forbtest && forbjectData.formdata.batch[a]['companyDescriptiveDate']){?><?-forbjectData.formdata.batch[a]['companyDescriptiveDate']?><?}else{?> <?}?>" />
+        <input id="<?- batchPrefix ?>companyDescriptiveDate" class="ts-input <?- batchPrefix ?>companyDescriptiveDate" name="batches[<?- a?>][companyDescriptiveDate]" maxlength="6" value="<?if( forbtest && forbjectData.formdata.batches[a]['companyDescriptiveDate']){?><?-forbjectData.formdata.batches[a]['companyDescriptiveDate']?><?}else{?> <?}?>" />
       </div>
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>effectiveEntryDate">Effective Entry Date</label>
-        <input id="<?- batchPrefix ?>effectiveEntryDate" class="ts-input <?- batchPrefix ?>effectiveEntryDate" name="batch[<?- a?>][effectiveEntryDate]" maxlength="6" value="<?if( forbtest && forbjectData.formdata.batch[a]['effectiveEntryDate']){?><?-forbjectData.formdata.batch[a]['effectiveEntryDate']?><?}else{?>150410<?}?>" />
+        <input id="<?- batchPrefix ?>effectiveEntryDate" class="ts-input <?- batchPrefix ?>effectiveEntryDate" name="batches[<?- a?>][effectiveEntryDate]" maxlength="6" value="<?if( forbtest && forbjectData.formdata.batches[a]['effectiveEntryDate']){?><?-forbjectData.formdata.batches[a]['effectiveEntryDate']?><?}else{?>150410<?}?>" />
       </div>
       <div class="ts-col-span6 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>settlementDate">Settlement Date</label>
-        <input id="<?- batchPrefix ?>settlementDate" class="ts-input <?- batchPrefix ?>settlementDate" name="batch[<?- a?>][settlementDate]" maxlength="3" value="<?if( forbtest && forbjectData.formdata.batch[a]['settlementDate']){?><?-forbjectData.formdata.batch[a]['settlementDate']?><?}else{?> <?}?>" />
+        <input id="<?- batchPrefix ?>settlementDate" class="ts-input <?- batchPrefix ?>settlementDate" name="batches[<?- a?>][settlementDate]" maxlength="3" value="<?if( forbtest && forbjectData.formdata.batches[a]['settlementDate']){?><?-forbjectData.formdata.batches[a]['settlementDate']?><?}else{?> <?}?>" />
       </div>
       <div class="ts-col-span4 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>originatorStatusCode">Originator Status Code</label>
-        <input id="<?- batchPrefix ?>originatorStatusCode" class="ts-input <?- batchPrefix ?>originatorStatusCode" name="batch[<?- a?>][originatorStatusCode]" maxlength="1" value="<?if( forbtest && forbjectData.formdata.batch[a]['originatorStatusCode']){?><?-forbjectData.formdata.batch[a]['originatorStatusCode']?><?}else{?>1<?}?>" />
+        <input id="<?- batchPrefix ?>originatorStatusCode" class="ts-input <?- batchPrefix ?>originatorStatusCode" name="batches[<?- a?>][originatorStatusCode]" maxlength="1" value="<?if( forbtest && forbjectData.formdata.batches[a]['originatorStatusCode']){?><?-forbjectData.formdata.batches[a]['originatorStatusCode']?><?}else{?>1<?}?>" />
       </div>
       <div class="ts-col-span4 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>originatingDFI">Originating DFI</label>
-        <input id="<?- batchPrefix ?>originatingDFI" class="ts-input <?- batchPrefix ?>originatingDFI" name="batch[<?- a?>][originatingDFI]" maxlength="9" value="<?if( forbtest && forbjectData.formdata.batch[a]['originatingDFI']){?><?-forbjectData.formdata.batch[a]['originatingDFI']?><?}else{?>281073555<?}?>" />
+        <input id="<?- batchPrefix ?>originatingDFI" class="ts-input <?- batchPrefix ?>originatingDFI" name="batches[<?- a?>][originatingDFI]" maxlength="9" value="<?if( forbtest && forbjectData.formdata.batches[a]['originatingDFI']){?><?-forbjectData.formdata.batches[a]['originatingDFI']?><?}else{?>281073555<?}?>" />
       </div>
       <div class="ts-col-span4 ts-form-padding">
         <label class="ts-label" for="<?- batchPrefix ?>batchNumber">Batch Number</label>
-        <input id="<?- batchPrefix ?>batchNumber" class="ts-input <?- batchPrefix ?>batchNumber" name="batch[<?- a?>][batchNumber]" maxlength="7" value="<?if( forbtest && forbjectData.formdata.batch[a]['batchNumber']){?><?-forbjectData.formdata.batch[a]['batchNumber']?><?}else{?>0001<?- a ?><?}?>" />
+        <input id="<?- batchPrefix ?>batchNumber" class="ts-input <?- batchPrefix ?>batchNumber" name="batches[<?- a?>][batchNumber]" maxlength="7" value="<?if( forbtest && forbjectData.formdata.batches[a]['batchNumber']){?><?-forbjectData.formdata.batches[a]['batchNumber']?><?}else{?>0001<?- a ?><?}?>" />
       </div>
     </section>
     <section data-batchIndex="<?-a?>" id="ach-batch-entrycontainer-<?-a?>" class="ach-batch-entrycontainer ts-form-row">
-      <? if(forbtest && forbjectData.formdata.batch[a][ 'entries']){ ?> has entries
-<? } ?>
+      <? if(forbtest && forbjectData.formdata.batches[a][ 'entries']){ batchIndex=a ;?>
+<? 
+var existingEntriesTest = (typeof entriesCount === 'undefined' && forbtest && forbjectData.formdata.batches[batchIndex].entries);
+if(existingEntriesTest){
+  entriesCount = 0;
+  for(var prop in forbjectData.formdata.batches[batchIndex].entries){
+    entriesCount++;
+  };
+  forbtest = false;
+}
+
+if(typeof entriesCount !=='undefined'  && typeof batchIndex !=='undefined' ){ 
+  for(var b=0; b< entriesCount; b++){ 
+  entryIndex=b ;
+
+    forbtest=(forbjectData.formdata.batches && forbjectData.formdata.batches[batchIndex]&& forbjectData.formdata.batches[batchIndex]['entries']&& forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]); 
+
+   ?>
+
+<?if(existingEntriesTest){?>
+  <section class="ach-batchentry ts-form-row" id="ach-batchentry-<?-batchIndex?>-<?-entryIndex?>" data-batchindex="<?-batchIndex?>" data-entryindex="<?-entryIndex?>">
+<?}?>
+<hr>
+<div class="ts-row ts-text-sm">
+  <h6 class="ts-pull-left">Batch
+    <?-batchIndex?> - Entry
+      <?-entryIndex?>
+  </h6>
+  <small data-batchIndex="<?-batchIndex?>" data-entryIndex="<?-entryIndex?>" id="remove-batch-button-<?-batchentryPrefix?>" class="ts-button ts-text-xs ts-pull-right remove-button remove-batchentry-button">remove batch entry</small>
+</div>
+<section class="ts-form-row">
+  <div class="ts-col-span6 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>recordTypeCode">Record Type Code</label>
+    <input id="<?- batchentryPrefix ?>recordTypeCode" class="ts-input <?- batchentryPrefix ?>recordTypeCode" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][recordTypeCode]" value="6" maxlength="1" />
+  </div>
+  <div class="ts-col-span6 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>transactionCode">Transaction Code</label>
+    <input id="<?- batchentryPrefix ?>transactionCode" class="ts-input <?- batchentryPrefix ?>transactionCode" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][transactionCode]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['transactionCode']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['transactionCode']?><?}else{?>22<?}?>" />
+  </div>
+</section>
+<section class="ts-form-row">
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>receivingDFI">Receiving DFI Identification</label>
+    <input id="<?- batchentryPrefix ?>receivingDFI" class="ts-input <?- batchentryPrefix ?>receivingDFI" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][receivingDFI]" maxlength="8" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['receivingDFI']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['receivingDFI']?><?}else{?>081000210<?}?>" />
+  </div>
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>checkDigit">Check Digit</label>
+    <input id="<?- batchentryPrefix ?>checkDigit" class="ts-input <?- batchentryPrefix ?>checkDigit" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][checkDigit]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['checkDigit']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['checkDigit']?><?}else{?>9<?}?>" />
+  </div>
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>DFIAccount">DFI Account Number</label>
+    <input id="<?- batchentryPrefix ?>DFIAccount" class="ts-input <?- batchentryPrefix ?>DFIAccount" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][DFIAccount]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['DFIAccount']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['DFIAccount']?><?}else{?>12345678901234567<?}?>" />
+  </div>
+</section>
+<section class="ts-form-row">
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>amount">Amount</label>
+    <input id="<?- batchentryPrefix ?>amount" class="ts-input <?- batchentryPrefix ?>amount" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][amount]" maxlength="10" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['amount']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['amount']?><?}else{?>35.23<?}?>" />
+  </div>
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>idNumber">Individual Identification Number</label>
+    <input id="<?- batchentryPrefix ?>idNumber" class="ts-input <?- batchentryPrefix ?>idNumber" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][idNumber]" maxlength="15" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['idNumber']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['idNumber']?><?}else{?>RAj##23920rjf31<?}?>" />
+  </div>
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>individualName">Individual Name</label>
+    <input id="<?- batchentryPrefix ?>individualName" class="ts-input <?- batchentryPrefix ?>individualName" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][individualName]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['individualName']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['individualName']?><?}else{?>Glen Selle<?}?>" />
+  </div>
+</section>
+<section class="ts-form-row">
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>discretionaryData">Discretionary Data</label>
+    <input id="<?- batchentryPrefix ?>discretionaryData" class="ts-input <?- batchentryPrefix ?>discretionaryData" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][discretionaryData]" maxlength="2" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['discretionaryData']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['discretionaryData']?><?}else{?>A1<?}?>" />
+  </div>
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>addendaId">Addenda Record Indicator</label>
+    <input id="<?- batchentryPrefix ?>addendaId" class="ts-input <?- batchentryPrefix ?>addendaId" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][addendaId]" maxlength="1" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['addendaId']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['addendaId']?><?}else{?>0<?}?>" />
+  </div>
+
+  <div class="ts-col-span4 ts-form-padding">
+    <label class="ts-label" for="<?- batchentryPrefix ?>traceNumber">Trace Number</label>
+    <input id="<?- batchentryPrefix ?>traceNumber" class="ts-input <?- batchentryPrefix ?>traceNumber" name="batches[<?- batchIndex?>][entries][<?- entryIndex?>][traceNumber]" maxlength="15" value="<?if( forbtest && forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['traceNumber']){?><?-forbjectData.formdata.batches[batchIndex]['entries'][entryIndex]['traceNumber']?><?}else{?>021214860000001<?}?>" />
+  </div>
+</section>
+
+<?if(existingEntriesTest){?>
+</section>
+<?}?>
+  <? }
+  } ?>
+  <? } ?>
     </section>
     <section data-batchIndex="<?-a?>" id="ach-batch-entrybutton-container-<?-a?>" class="ach-batch-entrybutton-container ts-form-row">
       <small data-batchIndex="<?-a?>" id="add-batch-entry-button-<?-a?>" class="ts-button ts-text-xs ts-pull-right add-batch-entry-button">add batch entry</small>

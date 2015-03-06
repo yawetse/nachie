@@ -14,6 +14,7 @@ var achBatchCount = 0,
 	ejs = require('ejs'),
 	forbject = require('forbject'),
 	tsACHFileContainer,
+	tsACHFileContainerTopPos,
 	moment = require('moment'),
 	nach = require('nach'),
 	newACHBatch,
@@ -21,10 +22,32 @@ var achBatchCount = 0,
 	notification,
 	optionalButton,
 	optionalInputs,
+	saveAs = require('filesaver.js'),
 	StylieNotification = require('stylie.notifications'),
 	utils = nach.Utils;
 
 ejs.delimiter = '?';
+
+var downloadACH = function () {
+	var blob = new Blob([achFileOutput.innerHTML], {
+		type: 'text/plain;charset=utf-8'
+	});
+	saveAs(blob, 'nACHa.txt');
+	showNotification({
+		type: 'File Saved',
+		message: 'nACHa file saved'
+	});
+};
+var saveACH = function () {
+	var blob = new Blob([JSON.stringify(achForbject.getObject(), null, ' ')], {
+		type: 'application/json;charset=utf-8'
+	});
+	saveAs(blob, 'nachie.json');
+	showNotification({
+		type: 'File Saved',
+		message: 'Nachie file saved'
+	});
+};
 
 var showNotification = function (e) {
 	notification = new StylieNotification({
@@ -67,7 +90,8 @@ var expandACHOutput = function () {
 };
 
 var addACHBatch = function () {
-	achForbject.refresh();
+	console.log('before achBatchCount on addACHBatch', achBatchCount);
+	// achForbject.refresh();
 	achBindie.update({
 		data: {
 			achBatchCount: {
@@ -80,22 +104,23 @@ var addACHBatch = function () {
 		}
 	});
 	achBatchCount++;
+	console.log('after achBatchCount on addACHBatch', achBatchCount);
 };
 
 var updateNach = function (data) {
 	try {
 		achFile = new nach.File(data.file);
 
-		if (data.batch) {
-			for (var z in data.batch) {
-				// console.log(data.batch[z]);
-				data.batch[z].effectiveEntryDate = moment(data.batch[z].effectiveEntryDate, 'YYMMDD').toDate();
-				newACHBatch = new nach.Batch(data.batch[z]);
+		if (data.batches) {
+			for (var z in data.batches) {
+				// console.log(data.batches[z]);
+				data.batches[z].effectiveEntryDate = moment(data.batches[z].effectiveEntryDate, 'YYMMDD').toDate();
+				newACHBatch = new nach.Batch(data.batches[z]);
 
-				if (data.batch[z].entries) {
-					// console.log('data.batch[z].entries', data.batch[z].entries);
-					for (var y in data.batch[z].entries) {
-						newACHEntry = new nach.Entry(data.batch[z].entries[y]);
+				if (data.batches[z].entries) {
+					// console.log('data.batches[z].entries', data.batches[z].entries);
+					for (var y in data.batches[z].entries) {
+						newACHEntry = new nach.Entry(data.batches[z].entries[y]);
 						newACHBatch.addEntry(newACHEntry);
 					}
 				}
@@ -132,6 +157,12 @@ var achBatchContainerClickHandler = function (e) {
 		achBatchCount--;
 		achForbject.refresh();
 	}
+	else if (classie.has(clickTarget, 'remove-batchentry-button')) {
+		batchIndex = clickTarget.getAttribute('data-batchIndex');
+		entryIndex = clickTarget.getAttribute('data-entryIndex');
+		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).removeChild(document.querySelector('#ach-batchentry-' + batchIndex + '-' + entryIndex));
+		achForbject.refresh();
+	}
 	else if (classie.has(clickTarget, 'add-batch-entry-button')) {
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		batchElement = document.querySelector('#ach-batch-' + batchIndex);
@@ -139,9 +170,16 @@ var achBatchContainerClickHandler = function (e) {
 		elementsInBatch = batchElement.querySelectorAll('.ach-batchentry');
 		// entryIndex = (elementsInBatch.length > 0) ? (elementsInBatch.length - 1) : 0;
 		entryIndex = elementsInBatch.length;
+		console.log('entryIndex', entryIndex);
+		console.log('elementsInBatch', elementsInBatch);
+		console.log('elementsInBatch.length', elementsInBatch.length);
 		entryhtml = ejs.render(batchEntryTemplate, {
 			batchIndex: batchIndex,
-			entryIndex: entryIndex
+			entryIndex: entryIndex,
+			entriesCount: elementsInBatch.length + 1,
+			forbjectData: {
+				formdata: achForbject.getObject()
+			}
 		});
 		entryHtmlElement.setAttribute('class', 'ach-batchentry ts-form-row');
 		entryHtmlElement.setAttribute('id', 'ach-batchentry-' + batchIndex + '-' + entryIndex);
@@ -149,7 +187,18 @@ var achBatchContainerClickHandler = function (e) {
 		entryHtmlElement.setAttribute('data-entryIndex', entryIndex);
 		//id="ach-batchentry-<?-batchIndex?>-<?-entryIndex?>"
 		entryHtmlElement.innerHTML = entryhtml;
-		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).appendChild(entryHtmlElement);
+		// document.querySelector('#ach-batch-entrycontainer-' + batchIndex).appendChild(entryHtmlElement);
+		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).innerHTML = '<section class="ach-batchentry ts-form-row" id="ach-batchentry-' + batchIndex + '-' + entryIndex + '" data-batchindex="' + batchIndex + '" data-entryindex="' + entryIndex + '">' + entryhtml + '</section>';
+		// achForbject.refresh();
+	}
+};
+
+var moveACHFileOutput = function () {
+	if (window.scrollY > tsACHFileContainerTopPos && !classie.has(tsACHFileContainer, 'ach-fix-top')) {
+		classie.add(tsACHFileContainer, 'ach-fix-top');
+	}
+	else if (window.scrollY < tsACHFileContainerTopPos && classie.has(tsACHFileContainer, 'ach-fix-top')) {
+		classie.remove(tsACHFileContainer, 'ach-fix-top');
 	}
 };
 
@@ -193,8 +242,12 @@ window.addEventListener('load', function () {
 	optionalButton.addEventListener('click', showOptionalInput, false);
 	optionalInputs = document.querySelectorAll('.ts-form-optional');
 	tsACHFileContainer = document.querySelector('#ts-ach-file-container');
+	tsACHFileContainerTopPos = tsACHFileContainer.getBoundingClientRect().top;
 	initDefaultValues();
+	document.querySelector('#download-button').addEventListener('click', downloadACH, false);
+	document.querySelector('#save-button').addEventListener('click', saveACH, false);
 	window.achForbject = achForbject;
+	window.addEventListener('scroll', moveACHFileOutput, false);
 	// try {
 
 	// }
