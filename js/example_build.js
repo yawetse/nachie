@@ -6835,7 +6835,7 @@ module.exports = {
 };
 },{}],28:[function(require,module,exports){
 // Batch
-
+'use strict';
 var _ = require('lodash');
 var async = require('async');
 var utils = require('./../utils');
@@ -6856,6 +6856,7 @@ function Batch(options) {
 	utils.overrideLowLevel(highLevelControlOverrides, options, this);
 
 	// Validate the routing number (ABA) before slicing
+	options.originatingDFI = (options.originatingDFI.length===8) ? utils.computeCheckDigit(options.originatingDFI) : options.originatingDFI;
 	validate.validateRoutingNumber(options.originatingDFI);
 
 	if(options.companyName) {
@@ -7120,7 +7121,7 @@ module.exports = {
 };
 },{}],30:[function(require,module,exports){
 // Entry
-
+'use strict';
 var _ = require('lodash');
 var utils = require('./../utils');
 var validate = require('./../validate');
@@ -7128,7 +7129,6 @@ var validate = require('./../validate');
 var highLevelOverrides = ['transactionCode','receivingDFI','checkDigit','DFIAccount','amount','idNumber','individualName','discretionaryData','addendaId','traceNumber'];
 
 function Entry(options) {
-
 	// Allow the file header defaults to be overriden if provided
 	this.fields = options.fields ? _.merge(options.fields, require('./fields'), _.defaults) : _.cloneDeep(require('./fields'));
 
@@ -7137,8 +7137,8 @@ function Entry(options) {
 	
 	// Some values need special coercing, so after they've been set by overrideLowLevel() we override them
 	if(options.receivingDFI) {
-		this.fields.receivingDFI.value = options.receivingDFI.slice(0,-1);
-		this.fields.checkDigit.value = options.receivingDFI.slice(-1);
+		this.fields.receivingDFI.value = (this.fields.receivingDFI.value.length>8)?  options.receivingDFI.slice(0,-1) : this.fields.receivingDFI.value ;
+		this.fields.checkDigit.value = (!options.checkDigit && this.fields.receivingDFI.value.length>8)? options.receivingDFI.slice(-1): this.fields.checkDigit.value;
 	}
 
 	if(options.DFIAccount) {
@@ -7419,11 +7419,11 @@ var async = require('async');
 var utils = require('../utils');
 var validate = require('../validate');
 
-var batchSequenceNumber = 0
+var batchSequenceNumber = 0;
 var highLevelOverrides = ['immediateDestination','immediateOrigin','fileCreationDate','fileCreationTime','fileIdModifier','immediateDestinationName','immediateOriginName','referenceCode'];
 
 function File(options) {
-	this._batches =  [];//(typeof options._batches !=='undefined') ? options._batches : [];
+	this._batches = [];
 
 	// Allow the batch header/control defaults to be overriden if provided
 	this.header = options.header ? _.merge(options.header, require('./header'), _.defaults) : _.cloneDeep(require('./header'));
@@ -16025,7 +16025,7 @@ module.exports = {
 					"position": 3,
 					"required": true,
 					"type": "numeric",
-					"value": "021200025"
+					"value": "08100021"
 				},
 				"checkDigit": {
 					"name": "Check Digit",
@@ -16049,7 +16049,7 @@ module.exports = {
 					"position": 6,
 					"required": true,
 					"type": "numeric",
-					"value": 35.23,
+					"value": 35.21,
 					"number": true
 				},
 				"idNumber": {
@@ -16058,7 +16058,7 @@ module.exports = {
 					"position": 7,
 					"required": false,
 					"type": "alphanumeric",
-					"value": "RAJ##23920RJF31"
+					"value": "RAj##23920rjf31"
 				},
 				"individualName": {
 					"name": "Individual Name",
@@ -16066,7 +16066,7 @@ module.exports = {
 					"position": 8,
 					"required": true,
 					"type": "alphanumeric",
-					"value": "GLEN SELLE"
+					"value": "Glen Selle"
 				},
 				"discretionaryData": {
 					"name": "Discretionary Data",
@@ -16091,7 +16091,286 @@ module.exports = {
 					"required": false,
 					"type": "numeric",
 					"blank": true,
-					"value": "123456780000000"
+					"value": "281073550000000"
+				}
+			}
+		}, {
+			"fields": {
+				"recordTypeCode": {
+					"name": "Record Type Code",
+					"width": 1,
+					"position": 1,
+					"required": true,
+					"type": "numeric",
+					"value": "6"
+				},
+				"transactionCode": {
+					"name": "Transaction Code",
+					"width": 2,
+					"position": 2,
+					"required": true,
+					"type": "numeric",
+					"value": "22"
+				},
+				"receivingDFI": {
+					"name": "Receiving DFI Identification",
+					"width": 8,
+					"position": 3,
+					"required": true,
+					"type": "numeric",
+					"value": "08100021"
+				},
+				"checkDigit": {
+					"name": "Check Digit",
+					"width": 1,
+					"position": 4,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"DFIAccount": {
+					"name": "DFI Account Number",
+					"width": 17,
+					"position": 5,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "5654221"
+				},
+				"amount": {
+					"name": "Amount",
+					"width": 10,
+					"position": 6,
+					"required": true,
+					"type": "numeric",
+					"value": 23,
+					"number": true
+				},
+				"idNumber": {
+					"name": "Individual Identification Number",
+					"width": 15,
+					"position": 7,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "RAj##32b1kn1bb3"
+				},
+				"individualName": {
+					"name": "Individual Name",
+					"width": 22,
+					"position": 8,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "Melanie Gibson"
+				},
+				"discretionaryData": {
+					"name": "Discretionary Data",
+					"width": 2,
+					"position": 9,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "A1"
+				},
+				"addendaId": {
+					"name": "Addenda Record Indicator",
+					"width": 1,
+					"position": 10,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"traceNumber": {
+					"name": "Trace Number",
+					"width": 15,
+					"position": 11,
+					"required": false,
+					"type": "numeric",
+					"blank": true,
+					"value": "281073550000001"
+				}
+			}
+		}, {
+			"fields": {
+				"recordTypeCode": {
+					"name": "Record Type Code",
+					"width": 1,
+					"position": 1,
+					"required": true,
+					"type": "numeric",
+					"value": "6"
+				},
+				"transactionCode": {
+					"name": "Transaction Code",
+					"width": 2,
+					"position": 2,
+					"required": true,
+					"type": "numeric",
+					"value": "22"
+				},
+				"receivingDFI": {
+					"name": "Receiving DFI Identification",
+					"width": 8,
+					"position": 3,
+					"required": true,
+					"type": "numeric",
+					"value": "08100021"
+				},
+				"checkDigit": {
+					"name": "Check Digit",
+					"width": 1,
+					"position": 4,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"DFIAccount": {
+					"name": "DFI Account Number",
+					"width": 17,
+					"position": 5,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "5654221"
+				},
+				"amount": {
+					"name": "Amount",
+					"width": 10,
+					"position": 6,
+					"required": true,
+					"type": "numeric",
+					"value": 24.99,
+					"number": true
+				},
+				"idNumber": {
+					"name": "Individual Identification Number",
+					"width": 15,
+					"position": 7,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "RAj##32b1kn1bb3"
+				},
+				"individualName": {
+					"name": "Individual Name",
+					"width": 22,
+					"position": 8,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "Roger Phlaster"
+				},
+				"discretionaryData": {
+					"name": "Discretionary Data",
+					"width": 2,
+					"position": 9,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "A1"
+				},
+				"addendaId": {
+					"name": "Addenda Record Indicator",
+					"width": 1,
+					"position": 10,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"traceNumber": {
+					"name": "Trace Number",
+					"width": 15,
+					"position": 11,
+					"required": false,
+					"type": "numeric",
+					"blank": true,
+					"value": "281073550000002"
+				}
+			}
+		}, {
+			"fields": {
+				"recordTypeCode": {
+					"name": "Record Type Code",
+					"width": 1,
+					"position": 1,
+					"required": true,
+					"type": "numeric",
+					"value": "6"
+				},
+				"transactionCode": {
+					"name": "Transaction Code",
+					"width": 2,
+					"position": 2,
+					"required": true,
+					"type": "numeric",
+					"value": "22"
+				},
+				"receivingDFI": {
+					"name": "Receiving DFI Identification",
+					"width": 8,
+					"position": 3,
+					"required": true,
+					"type": "numeric",
+					"value": "08100021"
+				},
+				"checkDigit": {
+					"name": "Check Digit",
+					"width": 1,
+					"position": 4,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"DFIAccount": {
+					"name": "DFI Account Number",
+					"width": 17,
+					"position": 5,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "5654221"
+				},
+				"amount": {
+					"name": "Amount",
+					"width": 10,
+					"position": 6,
+					"required": true,
+					"type": "numeric",
+					"value": 10,
+					"number": true
+				},
+				"idNumber": {
+					"name": "Individual Identification Number",
+					"width": 15,
+					"position": 7,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "RAj##32b1kn1bb3"
+				},
+				"individualName": {
+					"name": "Individual Name",
+					"width": 22,
+					"position": 8,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "Mark Rather"
+				},
+				"discretionaryData": {
+					"name": "Discretionary Data",
+					"width": 2,
+					"position": 9,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "A1"
+				},
+				"addendaId": {
+					"name": "Addenda Record Indicator",
+					"width": 1,
+					"position": 10,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"traceNumber": {
+					"name": "Trace Number",
+					"width": 15,
+					"position": 11,
+					"required": false,
+					"type": "numeric",
+					"blank": true,
+					"value": "281073550000003"
 				}
 			}
 		}],
@@ -16118,7 +16397,7 @@ module.exports = {
 				"position": 3,
 				"required": true,
 				"type": "alphanumeric",
-				"value": "ACME INC"
+				"value": "Zipline Labs Inc"
 			},
 			"companyDiscretionaryData": {
 				"name": "Company Discretionary Data",
@@ -16127,7 +16406,7 @@ module.exports = {
 				"required": false,
 				"type": "alphanumeric",
 				"blank": true,
-				"value": " "
+				"value": ""
 			},
 			"companyIdentification": {
 				"name": "Company Identification",
@@ -16143,7 +16422,7 @@ module.exports = {
 				"position": 6,
 				"required": true,
 				"type": "alpha",
-				"value": "PPD"
+				"value": "WEB"
 			},
 			"companyEntryDescription": {
 				"name": "Company Entry Description",
@@ -16151,7 +16430,7 @@ module.exports = {
 				"position": 7,
 				"required": true,
 				"type": "alphanumeric",
-				"value": "AS PAYMENT"
+				"value": "Zip Transf"
 			},
 			"companyDescriptiveDate": {
 				"name": "Company Descriptive Date",
@@ -16159,7 +16438,7 @@ module.exports = {
 				"position": 8,
 				"required": false,
 				"type": "alphanumeric",
-				"value": " "
+				"value": "Mar 9"
 			},
 			"effectiveEntryDate": {
 				"name": "Effective Entry Date",
@@ -16167,7 +16446,7 @@ module.exports = {
 				"position": 9,
 				"required": true,
 				"type": "numeric",
-				"value": "150410"
+				"value": "150309"
 			},
 			"settlementDate": {
 				"name": "Settlement Date",
@@ -16192,7 +16471,7 @@ module.exports = {
 				"position": 12,
 				"required": true,
 				"type": "numeric",
-				"value": "021200025"
+				"value": "28107355"
 			},
 			"batchNumber": {
 				"name": "Batch Number",
@@ -16200,7 +16479,7 @@ module.exports = {
 				"position": 13,
 				"required": false,
 				"type": "numeric",
-				"value": 456
+				"value": 0
 			}
 		},
 		"control": {
@@ -16226,7 +16505,7 @@ module.exports = {
 				"position": 3,
 				"required": true,
 				"type": "numeric",
-				"value": 1
+				"value": 4
 			},
 			"entryHash": {
 				"name": "Entry Hash",
@@ -16234,7 +16513,7 @@ module.exports = {
 				"position": 4,
 				"required": true,
 				"type": "numeric",
-				"value": "8100021"
+				"value": "32400084"
 			},
 			"totalDebit": {
 				"name": "Total Debit Entry Dollar Amount",
@@ -16251,7 +16530,7 @@ module.exports = {
 				"position": 6,
 				"required": true,
 				"type": "numeric",
-				"value": 35.23,
+				"value": 93.2,
 				"number": true
 			},
 			"companyIdentification": {
@@ -16286,219 +16565,15 @@ module.exports = {
 				"position": 10,
 				"required": true,
 				"type": "numeric",
-				"value": "021200025"
+				"value": "28107355"
 			},
 			"batchNumber": {
 				"name": "Batch Number",
 				"width": 7,
 				"position": 11,
 				"required": false,
-				"type": "numeric",
-				"value": 456
-			}
-		}
-	}, {
-		"_entries": [],
-		"header": {
-			"recordTypeCode": {
-				"name": "Record Type Code",
-				"width": 1,
-				"position": 1,
-				"required": true,
-				"type": "numeric",
-				"value": "5"
-			},
-			"serviceClassCode": {
-				"name": "Service Class Code",
-				"width": 3,
-				"position": 2,
-				"required": true,
-				"type": "numeric",
-				"value": "220"
-			},
-			"companyName": {
-				"name": "Company Name",
-				"width": 16,
-				"position": 3,
-				"required": true,
-				"type": "alphanumeric",
-				"value": "AACMEASDFINC"
-			},
-			"companyDiscretionaryData": {
-				"name": "Company Discretionary Data",
-				"width": 20,
-				"position": 4,
-				"required": false,
-				"type": "alphanumeric",
-				"blank": true,
-				"value": " "
-			},
-			"companyIdentification": {
-				"name": "Company Identification",
-				"width": 10,
-				"position": 5,
-				"required": true,
-				"type": "numeric",
-				"value": "471934319"
-			},
-			"standardEntryClassCode": {
-				"name": "Standard Entry Class Code",
-				"width": 3,
-				"position": 6,
-				"required": true,
-				"type": "alpha",
-				"value": "PPD"
-			},
-			"companyEntryDescription": {
-				"name": "Company Entry Description",
-				"width": 10,
-				"position": 7,
-				"required": true,
-				"type": "alphanumeric",
-				"value": "NEW ASDF"
-			},
-			"companyDescriptiveDate": {
-				"name": "Company Descriptive Date",
-				"width": 6,
-				"position": 8,
-				"required": false,
-				"type": "alphanumeric",
-				"value": " "
-			},
-			"effectiveEntryDate": {
-				"name": "Effective Entry Date",
-				"width": 6,
-				"position": 9,
-				"required": true,
-				"type": "numeric",
-				"value": "150410"
-			},
-			"settlementDate": {
-				"name": "Settlement Date",
-				"width": 3,
-				"position": 10,
-				"required": false,
-				"type": "numeric",
-				"blank": true,
-				"value": ""
-			},
-			"originatorStatusCode": {
-				"name": "Originator Status Code",
-				"width": 1,
-				"position": 11,
-				"required": true,
-				"type": "numeric",
-				"value": "1"
-			},
-			"originatingDFI": {
-				"name": "Originating DFI",
-				"width": 8,
-				"position": 12,
-				"required": true,
-				"type": "numeric",
-				"value": "021200025"
-			},
-			"batchNumber": {
-				"name": "Batch Number",
-				"width": 7,
-				"position": 13,
-				"required": false,
-				"type": "numeric",
-				"value": 457
-			}
-		},
-		"control": {
-			"recordTypeCode": {
-				"name": "Record Type Code",
-				"width": 1,
-				"position": 1,
-				"required": true,
-				"type": "numeric",
-				"value": "8"
-			},
-			"serviceClassCode": {
-				"name": "Service Class Code",
-				"width": 3,
-				"position": 2,
-				"required": true,
-				"type": "numeric",
-				"value": "220"
-			},
-			"addendaCount": {
-				"name": "Addenda Count",
-				"width": 6,
-				"position": 3,
-				"required": true,
 				"type": "numeric",
 				"value": 0
-			},
-			"entryHash": {
-				"name": "Entry Hash",
-				"width": 10,
-				"position": 4,
-				"required": true,
-				"type": "numeric",
-				"value": 0
-			},
-			"totalDebit": {
-				"name": "Total Debit Entry Dollar Amount",
-				"width": 12,
-				"position": 5,
-				"required": true,
-				"type": "numeric",
-				"value": 0,
-				"number": true
-			},
-			"totalCredit": {
-				"name": "Total Credit Entry Dollar Amount",
-				"width": 12,
-				"position": 6,
-				"required": true,
-				"type": "numeric",
-				"value": 0,
-				"number": true
-			},
-			"companyIdentification": {
-				"name": "Company Identification",
-				"width": 10,
-				"position": 7,
-				"required": true,
-				"type": "numeric",
-				"value": "471934319"
-			},
-			"messageAuthenticationCode": {
-				"name": "Message Authentication Code",
-				"width": 19,
-				"position": 8,
-				"required": false,
-				"type": "alphanumeric",
-				"blank": true,
-				"value": ""
-			},
-			"reserved": {
-				"name": "Reserved",
-				"width": 6,
-				"position": 9,
-				"required": false,
-				"type": "alphanumeric",
-				"blank": true,
-				"value": ""
-			},
-			"originatingDFI": {
-				"name": "Originating DFI",
-				"width": 8,
-				"position": 10,
-				"required": true,
-				"type": "numeric",
-				"value": "021200025"
-			},
-			"batchNumber": {
-				"name": "Batch Number",
-				"width": 7,
-				"position": 11,
-				"required": false,
-				"type": "numeric",
-				"value": 457
 			}
 		}
 	}, {
@@ -16526,7 +16601,7 @@ module.exports = {
 					"position": 3,
 					"required": true,
 					"type": "numeric",
-					"value": "021200025"
+					"value": "08100021"
 				},
 				"checkDigit": {
 					"name": "Check Digit",
@@ -16542,7 +16617,7 @@ module.exports = {
 					"position": 5,
 					"required": true,
 					"type": "alphanumeric",
-					"value": "12345678901234567"
+					"value": "5654221"
 				},
 				"amount": {
 					"name": "Amount",
@@ -16550,7 +16625,7 @@ module.exports = {
 					"position": 6,
 					"required": true,
 					"type": "numeric",
-					"value": 35.23,
+					"value": 175,
 					"number": true
 				},
 				"idNumber": {
@@ -16559,7 +16634,7 @@ module.exports = {
 					"position": 7,
 					"required": false,
 					"type": "alphanumeric",
-					"value": "ASDFDSAF"
+					"value": "RAj##32b1kn1bb3"
 				},
 				"individualName": {
 					"name": "Individual Name",
@@ -16567,7 +16642,7 @@ module.exports = {
 					"position": 8,
 					"required": true,
 					"type": "alphanumeric",
-					"value": "JOSH JER"
+					"value": "Luke Skywalker"
 				},
 				"discretionaryData": {
 					"name": "Discretionary Data",
@@ -16592,7 +16667,7 @@ module.exports = {
 					"required": false,
 					"type": "numeric",
 					"blank": true,
-					"value": "123456780000001"
+					"value": "281073550000004"
 				}
 			}
 		}],
@@ -16619,7 +16694,7 @@ module.exports = {
 				"position": 3,
 				"required": true,
 				"type": "alphanumeric",
-				"value": "ACME INC"
+				"value": "Zipline Labs Inc"
 			},
 			"companyDiscretionaryData": {
 				"name": "Company Discretionary Data",
@@ -16628,7 +16703,7 @@ module.exports = {
 				"required": false,
 				"type": "alphanumeric",
 				"blank": true,
-				"value": " "
+				"value": ""
 			},
 			"companyIdentification": {
 				"name": "Company Identification",
@@ -16644,7 +16719,7 @@ module.exports = {
 				"position": 6,
 				"required": true,
 				"type": "alpha",
-				"value": "PPD"
+				"value": "WEB"
 			},
 			"companyEntryDescription": {
 				"name": "Company Entry Description",
@@ -16652,7 +16727,7 @@ module.exports = {
 				"position": 7,
 				"required": true,
 				"type": "alphanumeric",
-				"value": "NEW PAYMEN"
+				"value": "Zip Transf"
 			},
 			"companyDescriptiveDate": {
 				"name": "Company Descriptive Date",
@@ -16660,7 +16735,7 @@ module.exports = {
 				"position": 8,
 				"required": false,
 				"type": "alphanumeric",
-				"value": " "
+				"value": "Mar 18"
 			},
 			"effectiveEntryDate": {
 				"name": "Effective Entry Date",
@@ -16668,7 +16743,7 @@ module.exports = {
 				"position": 9,
 				"required": true,
 				"type": "numeric",
-				"value": "150410"
+				"value": "150318"
 			},
 			"settlementDate": {
 				"name": "Settlement Date",
@@ -16693,7 +16768,7 @@ module.exports = {
 				"position": 12,
 				"required": true,
 				"type": "numeric",
-				"value": "021200025"
+				"value": "28107355"
 			},
 			"batchNumber": {
 				"name": "Batch Number",
@@ -16701,7 +16776,7 @@ module.exports = {
 				"position": 13,
 				"required": false,
 				"type": "numeric",
-				"value": 458
+				"value": 1
 			}
 		},
 		"control": {
@@ -16752,7 +16827,7 @@ module.exports = {
 				"position": 6,
 				"required": true,
 				"type": "numeric",
-				"value": 35.23,
+				"value": 175,
 				"number": true
 			},
 			"companyIdentification": {
@@ -16787,7 +16862,7 @@ module.exports = {
 				"position": 10,
 				"required": true,
 				"type": "numeric",
-				"value": "021200025"
+				"value": "28107355"
 			},
 			"batchNumber": {
 				"name": "Batch Number",
@@ -16795,7 +16870,304 @@ module.exports = {
 				"position": 11,
 				"required": false,
 				"type": "numeric",
-				"value": 458
+				"value": 1
+			}
+		}
+	}, {
+		"_entries": [{
+			"fields": {
+				"recordTypeCode": {
+					"name": "Record Type Code",
+					"width": 1,
+					"position": 1,
+					"required": true,
+					"type": "numeric",
+					"value": "6"
+				},
+				"transactionCode": {
+					"name": "Transaction Code",
+					"width": 2,
+					"position": 2,
+					"required": true,
+					"type": "numeric",
+					"value": "27"
+				},
+				"receivingDFI": {
+					"name": "Receiving DFI Identification",
+					"width": 8,
+					"position": 3,
+					"required": true,
+					"type": "numeric",
+					"value": "10100001"
+				},
+				"checkDigit": {
+					"name": "Check Digit",
+					"width": 1,
+					"position": 4,
+					"required": true,
+					"type": "numeric",
+					"value": "9"
+				},
+				"DFIAccount": {
+					"name": "DFI Account Number",
+					"width": 17,
+					"position": 5,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "923698412584"
+				},
+				"amount": {
+					"name": "Amount",
+					"width": 10,
+					"position": 6,
+					"required": true,
+					"type": "numeric",
+					"value": 150,
+					"number": true
+				},
+				"idNumber": {
+					"name": "Individual Identification Number",
+					"width": 15,
+					"position": 7,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "RAj##23920rjf31"
+				},
+				"individualName": {
+					"name": "Individual Name",
+					"width": 22,
+					"position": 8,
+					"required": true,
+					"type": "alphanumeric",
+					"value": "Tom Horner"
+				},
+				"discretionaryData": {
+					"name": "Discretionary Data",
+					"width": 2,
+					"position": 9,
+					"required": false,
+					"type": "alphanumeric",
+					"value": "A1"
+				},
+				"addendaId": {
+					"name": "Addenda Record Indicator",
+					"width": 1,
+					"position": 10,
+					"required": true,
+					"type": "numeric",
+					"value": "0"
+				},
+				"traceNumber": {
+					"name": "Trace Number",
+					"width": 15,
+					"position": 11,
+					"required": false,
+					"type": "numeric",
+					"blank": true,
+					"value": "281073550000005"
+				}
+			}
+		}],
+		"header": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "5"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "225"
+			},
+			"companyName": {
+				"name": "Company Name",
+				"width": 16,
+				"position": 3,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "Zipline Labs Inc"
+			},
+			"companyDiscretionaryData": {
+				"name": "Company Discretionary Data",
+				"width": 20,
+				"position": 4,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"standardEntryClassCode": {
+				"name": "Standard Entry Class Code",
+				"width": 3,
+				"position": 6,
+				"required": true,
+				"type": "alpha",
+				"value": "PPD"
+			},
+			"companyEntryDescription": {
+				"name": "Company Entry Description",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "alphanumeric",
+				"value": "Zip Transf"
+			},
+			"companyDescriptiveDate": {
+				"name": "Company Descriptive Date",
+				"width": 6,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"value": "Mar 10"
+			},
+			"effectiveEntryDate": {
+				"name": "Effective Entry Date",
+				"width": 6,
+				"position": 9,
+				"required": true,
+				"type": "numeric",
+				"value": "150310"
+			},
+			"settlementDate": {
+				"name": "Settlement Date",
+				"width": 3,
+				"position": 10,
+				"required": false,
+				"type": "numeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatorStatusCode": {
+				"name": "Originator Status Code",
+				"width": 1,
+				"position": 11,
+				"required": true,
+				"type": "numeric",
+				"value": "1"
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 12,
+				"required": true,
+				"type": "numeric",
+				"value": "28107355"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 13,
+				"required": false,
+				"type": "numeric",
+				"value": 2
+			}
+		},
+		"control": {
+			"recordTypeCode": {
+				"name": "Record Type Code",
+				"width": 1,
+				"position": 1,
+				"required": true,
+				"type": "numeric",
+				"value": "8"
+			},
+			"serviceClassCode": {
+				"name": "Service Class Code",
+				"width": 3,
+				"position": 2,
+				"required": true,
+				"type": "numeric",
+				"value": "225"
+			},
+			"addendaCount": {
+				"name": "Addenda Count",
+				"width": 6,
+				"position": 3,
+				"required": true,
+				"type": "numeric",
+				"value": 1
+			},
+			"entryHash": {
+				"name": "Entry Hash",
+				"width": 10,
+				"position": 4,
+				"required": true,
+				"type": "numeric",
+				"value": "10100001"
+			},
+			"totalDebit": {
+				"name": "Total Debit Entry Dollar Amount",
+				"width": 12,
+				"position": 5,
+				"required": true,
+				"type": "numeric",
+				"value": 150,
+				"number": true
+			},
+			"totalCredit": {
+				"name": "Total Credit Entry Dollar Amount",
+				"width": 12,
+				"position": 6,
+				"required": true,
+				"type": "numeric",
+				"value": 0,
+				"number": true
+			},
+			"companyIdentification": {
+				"name": "Company Identification",
+				"width": 10,
+				"position": 7,
+				"required": true,
+				"type": "numeric",
+				"value": "471934319"
+			},
+			"messageAuthenticationCode": {
+				"name": "Message Authentication Code",
+				"width": 19,
+				"position": 8,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"reserved": {
+				"name": "Reserved",
+				"width": 6,
+				"position": 9,
+				"required": false,
+				"type": "alphanumeric",
+				"blank": true,
+				"value": ""
+			},
+			"originatingDFI": {
+				"name": "Originating DFI",
+				"width": 8,
+				"position": 10,
+				"required": true,
+				"type": "numeric",
+				"value": "28107355"
+			},
+			"batchNumber": {
+				"name": "Batch Number",
+				"width": 7,
+				"position": 11,
+				"required": false,
+				"type": "numeric",
+				"value": 2
 			}
 		}
 	}],
@@ -16823,7 +17195,7 @@ module.exports = {
 			"required": true,
 			"type": "ABA",
 			"paddingChar": " ",
-			"value": "123456789"
+			"value": "281073555"
 		},
 		"immediateOrigin": {
 			"name": "Immediate Origin",
@@ -16832,7 +17204,7 @@ module.exports = {
 			"required": true,
 			"type": "numeric",
 			"paddingChar": " ",
-			"value": "123456789"
+			"value": "471934319"
 		},
 		"fileCreationDate": {
 			"name": "File Creation Date",
@@ -16848,7 +17220,7 @@ module.exports = {
 			"position": 6,
 			"required": true,
 			"type": "numeric",
-			"value": "0109"
+			"value": "1213"
 		},
 		"fileIdModifier": {
 			"name": "File Modifier",
@@ -16888,7 +17260,7 @@ module.exports = {
 			"position": 11,
 			"required": true,
 			"type": "alphanumeric",
-			"value": "ACME ASDF DESTINATION"
+			"value": "Pulaski Bank"
 		},
 		"immediateOriginName": {
 			"name": "Immediate Origin Name",
@@ -16896,7 +17268,7 @@ module.exports = {
 			"position": 12,
 			"required": true,
 			"type": "alphanumeric",
-			"value": "ACME SDAF ORIGIN"
+			"value": "Zipline Labs Inc."
 		},
 		"referenceCode": {
 			"name": "Reference Code",
@@ -16904,7 +17276,7 @@ module.exports = {
 			"position": 13,
 			"required": true,
 			"type": "alphanumeric",
-			"value": "00000000"
+			"value": "#A000001"
 		}
 	},
 	"control": {
@@ -16920,35 +17292,35 @@ module.exports = {
 			"width": 6,
 			"position": 2,
 			"type": "numeric",
-			"value": 2
+			"value": 3
 		},
 		"blockCount": {
 			"name": "Block Count",
 			"width": 6,
 			"position": 3,
 			"type": "numeric",
-			"value": 1
+			"value": 2
 		},
 		"addendaCount": {
 			"name": "Addenda Count",
 			"width": 8,
 			"position": 4,
 			"type": "numeric",
-			"value": 2
+			"value": 6
 		},
 		"entryHash": {
 			"name": "Entry Hash",
 			"width": 10,
 			"position": 5,
 			"type": "numeric",
-			"value": "16200042"
+			"value": "50600106"
 		},
 		"totalDebit": {
 			"name": "Total Debit Entry Dollar Amount in File",
 			"width": 12,
 			"position": 6,
 			"type": "numeric",
-			"value": 0,
+			"value": 150,
 			"number": true
 		},
 		"totalCredit": {
@@ -16956,7 +17328,7 @@ module.exports = {
 			"width": 12,
 			"position": 7,
 			"type": "numeric",
-			"value": 70.46,
+			"value": 268.2,
 			"number": true
 		},
 		"reserved": {
@@ -16981,7 +17353,7 @@ var achBatchContainer,
 	achForbject,
 	Bindie = require('bindie'),
 	classie = require('classie'),
-	dummydata = require('./dummydata'),
+	dummydata = require('./dummydata2'),
 	expandButton,
 	ejs = require('ejs'),
 	forbject = require('forbject'),
@@ -16995,9 +17367,24 @@ var achBatchContainer,
 	notification,
 	optionalInputs,
 	saveAs = require('filesaver.js'),
-	StylieNotification = require('stylie.notifications');
+	StylieNotification = require('stylie.notifications'),
+	utils = nach.Utils;
 
 ejs.delimiter = '?';
+
+var removeEmptyObjectValues = function (obj) {
+	for (var property in obj) {
+		if (typeof obj[property] === 'object') {
+			removeEmptyObjectValues(obj[property]);
+		}
+		else {
+			if (obj[property] === '' || obj[property] === ' ' || obj[property] === null || obj[property] === undefined || Object.keys(obj).length === 0) {
+				delete obj[property];
+			}
+		}
+	}
+	return obj;
+};
 
 var showNotification = function (e) {
 	notification = new StylieNotification({
@@ -17053,7 +17440,6 @@ var updateNachieOutput = function (achFile) {
 				achFile: achFile
 			}
 		});
-		// achForbject.refresh();
 	}
 	catch (e) {
 		showNotification(e);
@@ -17093,7 +17479,7 @@ var getEntryValues = function (entryObject) {
 	for (var entryFieldProp in entryObject.fields) {
 		returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
 	}
-	return returnEntryObject;
+	return removeEmptyObjectValues(returnEntryObject);
 };
 
 var getBatchValues = function (batchObject) {
@@ -17108,7 +17494,7 @@ var getBatchValues = function (batchObject) {
 			returnBatchObject.entries[d] = getEntryValues(batchEntries[d]);
 		}
 	}
-	return returnBatchObject;
+	return removeEmptyObjectValues(returnBatchObject);
 };
 
 var addACHBatch = function () {
@@ -17122,27 +17508,28 @@ var addACHBatch = function () {
 
 var achBatchContainerClickHandler = function (e) {
 	var clickTarget = e.target,
-		batchIndex, entryIndex;
+		batchIndex, entryIndex,
+		refreshOutput = function () {
+			achForbject.refresh();
+			updateNachOnFormChange(achForbject.getObject());
+		};
 
 	if (classie.has(clickTarget, 'remove-batch-button')) {
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		achBatchContainer.removeChild(document.querySelector('#ach-batch-' + batchIndex));
-		achForbject.refresh();
+		refreshOutput();
 	}
 	else if (classie.has(clickTarget, 'remove-batchentry-button')) {
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		entryIndex = clickTarget.getAttribute('data-entryIndex');
 		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).removeChild(document.querySelector('#ach-batchentry-' + batchIndex + '-' + entryIndex));
-		achForbject.refresh();
+		refreshOutput();
 	}
 	else if (classie.has(clickTarget, 'add-batch-entry-button')) {
 		var nachieBatchEntry = dummydata._batches[0].entries[0];
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
-		console.log('batchIndex', batchIndex);
-		console.log('before achFile', achFile);
 		newACHEntry = new nach.Entry(nachieBatchEntry);
 		achFile._batches[batchIndex].addEntry(newACHEntry);
-		console.log('after achFile', achFile);
 		updateNachieOutput(achFile);
 	}
 };
@@ -17229,7 +17616,6 @@ window.addEventListener('load', function () {
 		binderType: 'template',
 		binderTemplate: document.querySelector('#ach-form-template').innerHTML,
 		binderCallback: function ( /*cbdata*/ ) {
-			// updateOptionalInputs();
 			achForbject.refresh();
 			initEvents();
 			// console.log('binderCallback cbdata', cbdata);
@@ -17265,4 +17651,4 @@ window.addEventListener('load', function () {
 window.achForbject = achForbject;
 window.achFile = achFile;
 
-},{"./dummydata":43,"bindie":1,"classie":6,"ejs":10,"filesaver.js":13,"forbject":14,"moment":24,"nach":25,"stylie.notifications":40}]},{},[44]);
+},{"./dummydata2":43,"bindie":1,"classie":6,"ejs":10,"filesaver.js":13,"forbject":14,"moment":24,"nach":25,"stylie.notifications":40}]},{},[44]);
