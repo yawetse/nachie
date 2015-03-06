@@ -1,7 +1,6 @@
 'use strict';
 
-var achBatchCount = 0,
-	achBatchContainer,
+var achBatchContainer,
 	addBatchButton,
 	achBindie,
 	achFile,
@@ -22,7 +21,6 @@ var achBatchCount = 0,
 	newACHBatch,
 	newACHEntry,
 	notification,
-	optionalButton,
 	optionalInputs,
 	saveAs = require('filesaver.js'),
 	StylieNotification = require('stylie.notifications'),
@@ -61,23 +59,6 @@ var saveACH = function () {
 		type: 'File Saved',
 		message: 'Nachie file saved'
 	});
-};
-
-var showOptionalInput = function () {
-	if (classie.has(optionalButton, 'showing-optional')) {
-		classie.remove(optionalButton, 'showing-optional');
-		optionalButton.innerHTML = 'show optional';
-		for (var x = 0; x < optionalInputs.length; x++) {
-			classie.remove(optionalInputs[x], 'ts-show-optional');
-		}
-	}
-	else {
-		classie.add(optionalButton, 'showing-optional');
-		optionalButton.innerHTML = 'hide optional';
-		for (var y = 0; y < optionalInputs.length; y++) {
-			classie.add(optionalInputs[y], 'ts-show-optional');
-		}
-	}
 };
 
 var expandACHOutput = function () {
@@ -135,13 +116,44 @@ var updateNachOnFormChange = function (data) {
 	}
 };
 
+
+var getEntryValues = function (entryObject) {
+	var returnEntryObject = {};
+	for (var entryFieldProp in entryObject.fields) {
+		returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
+	}
+	return returnEntryObject;
+};
+
+var getBatchValues = function (batchObject) {
+	var returnBatchObject = {},
+		batchEntries = batchObject._entries || batchObject.entries;
+	for (var batchHeaderProp in batchObject.header) {
+		returnBatchObject[batchHeaderProp] = batchObject.header[batchHeaderProp].value;
+	}
+	if (batchEntries.length > 0) {
+		returnBatchObject.entries = [];
+		for (var d = 0; d < batchEntries.length; d++) {
+			returnBatchObject.entries[d] = getEntryValues(batchEntries[d]);
+		}
+	}
+	return returnBatchObject;
+};
+
+var addACHBatch = function () {
+	var newACHBatch,
+		nachieBatch = dummydata._batches[0];
+
+	newACHBatch = new nach.Batch(nachieBatch);
+	achFile.addBatch(newACHBatch);
+	updateNachieOutput(achFile);
+};
+
 var achBatchContainerClickHandler = function (e) {
 	var clickTarget = e.target,
-		batchIndex, entryIndex, entryhtml, batchElement, elementsInBatch, entryHtmlElement = document.createElement('section');
-	console.log(clickTarget);
+		batchIndex, entryIndex;
 
 	if (classie.has(clickTarget, 'remove-batch-button')) {
-		console.log(clickTarget, 'remove-batch-button');
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
 		achBatchContainer.removeChild(document.querySelector('#ach-batch-' + batchIndex));
 		achForbject.refresh();
@@ -153,71 +165,20 @@ var achBatchContainerClickHandler = function (e) {
 		achForbject.refresh();
 	}
 	else if (classie.has(clickTarget, 'add-batch-entry-button')) {
+		var nachieBatchEntry = dummydata._batches[0].entries[0];
 		batchIndex = clickTarget.getAttribute('data-batchIndex');
-		batchElement = document.querySelector('#ach-batch-' + batchIndex);
-		// console.log('batchElement', batchElement);
-		elementsInBatch = batchElement.querySelectorAll('.ach-batchentry');
-		// entryIndex = (elementsInBatch.length > 0) ? (elementsInBatch.length - 1) : 0;
-		entryIndex = elementsInBatch.length;
-		console.log('entryIndex', entryIndex);
-		console.log('elementsInBatch', elementsInBatch);
-		console.log('elementsInBatch.length', elementsInBatch.length);
-		entryhtml = ejs.render(batchEntryTemplate, {
-			batchIndex: batchIndex,
-			entryIndex: entryIndex,
-			entriesCount: elementsInBatch.length + 1,
-			forbjectData: {
-				formdata: achForbject.getObject()
-			}
-		});
-		entryHtmlElement.setAttribute('class', 'ach-batchentry ts-form-row');
-		entryHtmlElement.setAttribute('id', 'ach-batchentry-' + batchIndex + '-' + entryIndex);
-		entryHtmlElement.setAttribute('data-batchIndex', batchIndex);
-		entryHtmlElement.setAttribute('data-entryIndex', entryIndex);
-		//id="ach-batchentry-<?-batchIndex?>-<?-entryIndex?>"
-		entryHtmlElement.innerHTML = entryhtml;
-		// document.querySelector('#ach-batch-entrycontainer-' + batchIndex).appendChild(entryHtmlElement);
-		document.querySelector('#ach-batch-entrycontainer-' + batchIndex).innerHTML = '<section class="ach-batchentry ts-form-row" id="ach-batchentry-' + batchIndex + '-' + entryIndex + '" data-batchindex="' + batchIndex + '" data-entryindex="' + entryIndex + '">' + entryhtml + '</section>';
-		achForbject.refresh();
+		console.log('batchIndex', batchIndex);
+		console.log('before achFile', achFile);
+		newACHEntry = new nach.Entry(nachieBatchEntry);
+		achFile._batches[batchIndex].addEntry(newACHEntry);
+		console.log('after achFile', achFile);
+		updateNachieOutput(achFile);
 	}
-};
-
-var moveACHFileOutput = function () {
-	if (window.scrollY > tsACHFileContainerTopPos && !classie.has(tsACHFileContainer, 'ach-fix-top')) {
-		classie.add(tsACHFileContainer, 'ach-fix-top');
-	}
-	else if (window.scrollY < tsACHFileContainerTopPos && classie.has(tsACHFileContainer, 'ach-fix-top')) {
-		classie.remove(tsACHFileContainer, 'ach-fix-top');
-	}
-};
-
-var addACHBatch = function () {
-
 };
 
 var loadNachieFromObject = function (nachie) {
 	// console.log('nachie', nachie);
-	var data = {},
-		getEntryValues = function (entryObject) {
-			var returnEntryObject = {};
-			for (var entryFieldProp in entryObject.fields) {
-				returnEntryObject[entryFieldProp] = entryObject.fields[entryFieldProp].value;
-			}
-			return returnEntryObject;
-		},
-		getBatchValues = function (batchObject) {
-			var returnBatchObject = {};
-			for (var batchHeaderProp in batchObject.header) {
-				returnBatchObject[batchHeaderProp] = batchObject.header[batchHeaderProp].value;
-			}
-			if (batchObject._entries.length > 0) {
-				returnBatchObject.entries = [];
-				for (var d = 0; d < batchObject._entries.length; d++) {
-					returnBatchObject.entries[d] = getEntryValues(batchObject._entries[d]);
-				}
-			}
-			return returnBatchObject;
-		};
+	var data = {};
 
 	try {
 		for (var headerprop in nachie.header) {
@@ -275,8 +236,15 @@ var initEvents = function () {
 	addBatchButton.addEventListener('click', addACHBatch, false);
 	achBatchContainer = document.querySelector('#ach-file-batches');
 	achBatchContainer.addEventListener('click', achBatchContainerClickHandler, false);
-	// optionalButton = document.querySelector('#optional-button');
-	// optionalButton.addEventListener('click', showOptionalInput, false);
+};
+
+var moveACHFileOutput = function () {
+	if (window.scrollY > tsACHFileContainerTopPos && !classie.has(tsACHFileContainer, 'ach-fix-top')) {
+		classie.add(tsACHFileContainer, 'ach-fix-top');
+	}
+	else if (window.scrollY < tsACHFileContainerTopPos && classie.has(tsACHFileContainer, 'ach-fix-top')) {
+		classie.remove(tsACHFileContainer, 'ach-fix-top');
+	}
 };
 
 window.addEventListener('load', function () {
@@ -310,21 +278,17 @@ window.addEventListener('load', function () {
 	});
 	achForbject.on('autoRefreshOnValChange', updateNachOnFormChange);
 	initEvents();
-	// batchEntryTemplate = document.querySelector('#ach-batch-entrytemplate').innerHTML;
 	expandButton = document.querySelector('#expand-button');
 	expandButton.addEventListener('click', expandACHOutput, false);
 	loadNachieFile = document.querySelector('#load-button');
 	loadNachieFile.addEventListener('change', loadNachieFileHandler, false);
-
 	optionalInputs = document.querySelectorAll('.ts-form-optional');
 	tsACHFileContainer = document.querySelector('#ts-ach-file-container');
 	tsACHFileContainerTopPos = tsACHFileContainer.getBoundingClientRect().top;
-	// initDefaultValues();
 	document.querySelector('#download-button').addEventListener('click', downloadACH, false);
 	document.querySelector('#save-button').addEventListener('click', saveACH, false);
 	window.addEventListener('scroll', moveACHFileOutput, false);
 	loadNachieFromObject(dummydata);
-
 }, false);
 
 window.achForbject = achForbject;

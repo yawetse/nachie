@@ -71,22 +71,14 @@
   <h4 class="ts-pull-left">File Header</h4>
   <!-- <small id="optional-button" class="ts-button ts-text-xs ts-pull-right">show optional</small> -->
 </div>
-<div id="ach-file-header">
+<div id="ach-file-header" class="ts-text-sm">
   <section class="ts-form-row">
-  <? var fileheadercount=0; 
-    for(var headerprops in header){  ?>
+  <? for(var headerprops in header){  ?>
     <div class="ts-col-span6 ts-form-padding">
       <label class="ts-label" for="file-<?- headerprops ?>"><?- header[headerprops].name ?></label>
       <input id="file-<?- headerprops ?>" class="ts-input file-<?- headerprops ?>" name="file[<?- headerprops ?>]" value="<?- header[headerprops].value ?>" maxlength="<?- header[headerprops].width ?>" />
     </div>
-    <? 
-    if(fileheadercount%2===0){?>
-    </section>
-    <section class="ts-form-row">
-    <?}
-    fileheadercount++;
-  } ?>
-  <section>
+ <? } ?>
 </div>
 <section class="ts-container-margin-xl">
   <div class="ts-row ">
@@ -109,6 +101,29 @@
               </div>
           <? } ?>
         </article>
+        <section data-batchIndex="<?-z?>" id="ach-batch-entrycontainer-<?-z?>" class="ach-batch-entrycontainer ts-form-row">
+          <? for(var v =0; v < _batches[z]._entries.length; v++){ ?>
+            <hr>
+            <div class="ts-row ts-text-sm">
+              <h6 class="ts-pull-left">Batch <?-z?> - Entry <?-v?>
+              </h6>
+              <small data-batchIndex="<?-z?>" data-entryIndex="<?-v?>" id="remove-batch-button-batch-<?-z?>-entry-<?-v?>-<?- entryprops ?>" class="ts-button ts-text-xs ts-pull-right remove-button remove-batchentry-button">remove batch entry</small>
+            </div>
+            <article class="ts-form-row ts-text-sm">
+              <? for(var entryprops in _batches[z]._entries[v].fields){ ?>
+                <div class="ts-col-span6 ts-form-padding">
+                  <label class="ts-label" for="batch-<?-z?>-entry-<?-v?>-<?- entryprops ?>"><?- _batches[z]._entries[v].fields[entryprops].name ?></label>
+                  <input class="ts-input ts-batch-entry"
+                  id="batch-<?-z?>-entry-<?-v?>-<?- entryprops ?>"
+                  name="batches[<?-z?>][entries][<?-v?>][entryprops]" value="<?- _batches[z]._entries[v].fields[entryprops].value ?>" maxlength="<?- _batches[z]._entries[v].fields[entryprops].width ?>"/>
+                </div>
+              <? } ?>
+            </article>
+          <? }?>
+        </section>
+        <section data-batchIndex="<?-z?>" id="ach-batch-entrybutton-container-<?-z?>" class="ach-batch-entrybutton-container ts-form-row">
+          <small data-batchIndex="<?-z?>" id="add-batch-entry-button-<?-z?>" class="ts-button ts-text-xs ts-pull-right add-batch-entry-button">add batch entry</small>
+        </section>
       </aside>
     <?} ?>    
   </div>
