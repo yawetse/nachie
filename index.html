@@ -1,44 +1,151 @@
-<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Nachie by yawetse</title>
+<html class="ts">
 
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-    <div class="wrapper">
-      <header>
-        <h1>Nachie</h1>
-        <p>API wrapper for generating ACH (Automated Clearing House) files for use within the ACH network</p>
+<head>
+  <title>Nachie</title>
+  <link rel="stylesheet" type="text/css" href="stylesheets/example.css">
+  <link rel="stylesheet" type="text/css" href="stylesheets/nachie.css">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Various styles and effects for unobtrusive notifications on a website" />
+  <meta name="keywords" content="notification, inspiration, style, effect, growl, javascript" />
+  <link rel="icon" type="image/png" href="img/favicon.png">
+  <script src='js/example.min.js'></script>
+</head>
 
-        <p class="view"><a href="https://github.com/yawetse/nachie">View the Project on GitHub <small>yawetse/nachie</small></a></p>
-
-
-        <ul>
-          <li><a href="https://github.com/yawetse/nachie/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/yawetse/nachie/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/yawetse/nachie">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h1>
-<a id="nacha" class="anchor" href="#nacha" aria-hidden="true"><span class="octicon octicon-link"></span></a>nacha</h1>
-
-<p>API wrapper for generating ACH (Automated Clearing House) files for use within the ACH network</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/yawetse">yawetse</a></p>
-        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
+<body class="">
+  <main class="ts-container ts-container-margin-xl">
+    <article class="ts-text-container">
+      <section class="ts-no-x-overflow">
+        <div class="ts-row ts-no-heading-margin">
+          <h1 class="ts-pull-left">Nachie</h1>
+          <!-- <small id="load-button" class="ts-button ts-text-xs ts-pull-right">load file</small> -->
+          <input type="file" id="load-button" name="load-button" class="ts-button ts-text-xs ts-pull-right" style="padding: 1.5em;width: 9em;" />
+        </div>
+        <h3 class="ts-text-xx">
+          <small>Create ACH(Automated Clearing House) files for dispatch into the NACHA network</small>
+        </h3>
+        <div class="ts-row ts-container-margin-xl  ts-no-heading-margin ts-position-relative">
+          <div class="ts-col-span6 ts-screenmd-col-span12">
+            <form id="ach" name="ach" class="ts-form">
+  <div id="achFile-container-binder" >
+    <div class="ts-row ">
+      <h4 class="ts-pull-left">File Header</h4>
+      <!-- <small id="optional-button" class="ts-button ts-text-xs ts-pull-right">show optional</small> -->
     </div>
-    <script src="javascripts/scale.fix.js"></script>
-    
-  </body>
+    <div id="ach-file-header">
+      header
+    </div>
+    <section class="ts-container-margin-xl">
+      <div class="ts-row ">
+        <h4 class="ts-pull-left">ACH Batches</h4>
+        <small id="add-batch-button" class="ts-button ts-text-xs ts-pull-right">add batch</small>
+      </div>
+      <div id="ach-file-batches">
+        batches ->entries
+      </div>
+    </section>
+  </div>
+</form>
+          </div>
+          <div id="ts-ach-file-container" class="ts-col-span6 ts-screenmd-col-span12">
+            <div class="ts-row ">
+              <h4 class="ts-pull-left">ACH File</h4>
+              <small id="download-button" class="ts-button ts-text-xs ts-pull-right">download</small>
+              <small id="save-button" class="ts-button ts-text-xs ts-pull-right">save</small>
+              <small id="expand-button" class="ts-button ts-text-xs ts-pull-right">expand</small>
+            </div>
+            <pre id="ach-file-output" class="ts-bg-primary-text-color ts-text-text-primary-color ts-padding-md ts-text-xs ts-no-x-overflow">ACH file</pre>
+          </div>
+        </div>
+      </section>
+    </article>
+  </main>
+  <footer class="ts-container">
+    <section class="ts-text-container">
+      <summary>Built with <a href="http://typesettin.github.io/stylie/" target="_blank">Stylie</a>, <a href="https://github.com/yawetse/bindie" target="_blank">Bindie</a>, <a href="https://github.com/yawetse/forbject" target="_blank">Forbject</a>, <a href="https://github.com/typesettin/periodicjs" target="_blank">Periodic</a> and <a href="https://github.com/zipline/nACH" target="_blank">nACH</a>. Fork on <a href="https://github.com/yawetse/nachie" target="_blank">github</a>
+      </summary>
+    </section>
+  </footer>
+  <script id="ach-form-template" type="text/template">
+    <div class="ts-row ">
+  <h4 class="ts-pull-left">File Header</h4>
+  <!-- <small id="optional-button" class="ts-button ts-text-xs ts-pull-right">show optional</small> -->
+</div>
+<div id="ach-file-header" class="ts-text-sm">
+  <section class="ts-form-row">
+  <? for(var headerprops in header){  ?>
+    <div class="ts-col-span6 ts-form-padding">
+      <label class="ts-label" for="file-<?- headerprops ?>"><?- header[headerprops].name ?></label>
+      <input id="file-<?- headerprops ?>" class="ts-input file-<?- headerprops ?>" name="file[<?- headerprops ?>]" value="<?- header[headerprops].value ?>" maxlength="<?- header[headerprops].width ?>" />
+    </div>
+ <? } ?>
+</div>
+<section class="ts-container-margin-xl">
+  <div class="ts-row ">
+    <h4 class="ts-pull-left">ACH Batches</h4>
+    <small id="add-batch-button" class="ts-button ts-text-xs ts-pull-right">add batch</small>
+  </div>
+  <div id="ach-file-batches">
+    <? for(var z = 0; z < _batches.length; z++){ ?>
+      <aside data-batchIndex="<?-z?>" id="ach-batch-<?-z?>" class="ach-batch ts-form-row">
+        <hr>
+        <div class="ts-row ">
+          <h6 class="ts-pull-left">Batch <?-z?></h6>
+          <small data-batchIndex="<?-z?>" id="remove-batch-button-<?-z?>" class="ts-button ts-text-xs ts-pull-right remove-batch-button">remove</small>
+        </div>  
+        <article class="ts-form-row">
+          <? for(var batchprop in _batches[z].header){ ?>
+              <div class="ts-col-span6 ts-form-padding">
+                <label class="ts-label" for="batches-<?- z ?>-<?- batchprop ?>"><?- _batches[z].header[batchprop].name ?></label>
+                <input id="batch-<?- z ?>-<?- batchprop ?>" class="ts-input batch-<?- z ?>-<?- batchprop ?>" name="batches[<?- z ?>][<?- batchprop ?>]" value="<?- _batches[z].header[batchprop].value ?>" maxlength="<?- _batches[z].header[batchprop].width ?>" />
+              </div>
+          <? } ?>
+        </article>
+        <section data-batchIndex="<?-z?>" id="ach-batch-entrycontainer-<?-z?>" class="ach-batch-entrycontainer ts-form-row">
+          <? for(var v =0; v < _batches[z]._entries.length; v++){ ?>
+            <hr>
+            <div class="ts-row ts-text-sm">
+              <h6 class="ts-pull-left">Batch <?-z?> - Entry <?-v?>
+              </h6>
+              <small data-batchIndex="<?-z?>" data-entryIndex="<?-v?>" id="remove-batch-button-batch-<?-z?>-entry-<?-v?>-<?- entryprops ?>" class="ts-button ts-text-xs ts-pull-right remove-button remove-batchentry-button">remove batch entry</small>
+            </div>
+            <article class="ts-form-row ts-text-sm">
+              <? for(var entryprops in _batches[z]._entries[v].fields){ ?>
+                <div class="ts-col-span6 ts-form-padding">
+                  <label class="ts-label" for="batch-<?-z?>-entry-<?-v?>-<?- entryprops ?>"><?- _batches[z]._entries[v].fields[entryprops].name ?></label>
+                  <input class="ts-input ts-batch-entry"
+                  id="batch-<?-z?>-entry-<?-v?>-<?- entryprops ?>"
+                  name="batches[<?-z?>][entries][<?-v?>][entryprops]" value="<?- _batches[z]._entries[v].fields[entryprops].value ?>" maxlength="<?- _batches[z]._entries[v].fields[entryprops].width ?>"/>
+                </div>
+              <? } ?>
+            </article>
+          <? }?>
+        </section>
+        <section data-batchIndex="<?-z?>" id="ach-batch-entrybutton-container-<?-z?>" class="ach-batch-entrybutton-container ts-form-row">
+          <small data-batchIndex="<?-z?>" id="add-batch-entry-button-<?-z?>" class="ts-button ts-text-xs ts-pull-right add-batch-entry-button">add batch entry</small>
+        </section>
+      </aside>
+    <?} ?>    
+  </div>
+</section>
+  </script>
+  <!-- the overlay element -->
+  <script>
+  (function(i, s, o, g, r, a, m) {
+    i['GoogleAnalyticsObject'] = r;
+    i[r] = i[r] || function() {
+      (i[r].q = i[r].q || []).push(arguments)
+    }, i[r].l = 1 * new Date();
+    a = s.createElement(o),
+      m = s.getElementsByTagName(o)[0];
+    a.async = 1;
+    a.src = g;
+    m.parentNode.insertBefore(a, m)
+  })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+  ga('create', 'UA-52892914-6', 'auto');
+  ga('send', 'pageview');
+  </script>
+</body>
+
 </html>
