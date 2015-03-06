@@ -101,10 +101,10 @@ module.exports = function (grunt) {
 		less: {
 			development: {
 				options: {
-					sourceMap: true,
+					sourceMap: false,
 					yuicompress: true,
 					compress: true,
-					sourceMapFileInline: true
+					// sourceMapFileInline: true
 				},
 				files: {
 					'example/stylesheets/nachie.css': 'resources/stylesheets/nachie.less',
@@ -126,6 +126,17 @@ module.exports = function (grunt) {
 				}
 			}
 		},
+		cssmin: {
+			target: {
+				files: [{
+					expand: true,
+					cwd: 'example/stylesheets',
+					src: ['*.css', '!*.min.css'],
+					dest: 'example/stylesheets',
+					ext: '.min.css'
+				}]
+			}
+		},
 		watch: {
 			scripts: {
 				// files: '**/*.js',
@@ -138,7 +149,7 @@ module.exports = function (grunt) {
 					'resources/**/*.ejs',
 					'test/**/*.js',
 				],
-				tasks: ['lint', 'packagejs', 'less', 'html', /*'doc',*/ 'test'],
+				tasks: ['lint', 'packagejs', 'less', 'html', 'cssmin', /*'doc',*/ 'test'],
 				options: {
 					interrupt: true
 				}
